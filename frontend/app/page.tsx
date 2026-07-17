@@ -121,6 +121,21 @@ const TrustRideLogo = ({ className = "h-8 w-8", animate = false }: { className?:
   </svg>
 );
 
+// Reusable Official TrustRide Branding Component matching the requested style exactly
+const TrustRideBranding = ({ className = "" }: { className?: string }) => (
+  <div className={`flex items-center gap-2.5 ${className}`}>
+    <TrustRideLogo className="h-9 w-9 shrink-0" />
+    <div className="flex flex-col items-start leading-none">
+      <span className="text-sm font-black tracking-wider text-white font-sans uppercase">
+        TrustRide
+      </span>
+      <span className="text-[8px] font-bold tracking-widest text-slate-400 font-sans uppercase mt-0.5">
+        Audit Ledger Console
+      </span>
+    </div>
+  </div>
+);
+
 // Count-up helper component for statistics
 const CountUp = ({ value, duration = 800 }: { value: number; duration?: number }) => {
   const [count, setCount] = useState(0);
@@ -1258,18 +1273,9 @@ export default function Dashboard() {
           >
             <div 
               onClick={() => setViewMode("landing")} 
-              className="flex items-center gap-3 px-2.5 py-2 cursor-pointer hover:opacity-95 transition-all duration-300 group border border-white/5 bg-slate-900/40 rounded-xl"
+              className="flex items-center gap-3 px-2.5 py-2 cursor-pointer hover:opacity-95 transition-all duration-300 group border border-white/5 bg-slate-900/40 rounded-xl justify-center md:justify-start"
             >
-              <div className="relative h-10 w-10 shrink-0 bg-gradient-to-tr from-cyan-500 to-indigo-600 rounded-lg flex items-center justify-center border border-cyan-400/30 shadow-[0_0_15px_-3px_rgba(6,182,212,0.3)] group-hover:scale-105 transition-transform duration-300">
-                <TrustRideLogo className="h-6 w-6 text-slate-950" />
-                <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-cyan-400 border border-slate-950 animate-pulse" />
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <span className="text-xs font-black tracking-widest uppercase bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-300 bg-clip-text text-transparent font-mono group-hover:text-cyan-300 transition-colors">
-                  TrustRide
-                </span>
-                <span className="text-[8px] text-muted-foreground font-bold tracking-wider font-mono">SECURE ENGINE</span>
-              </div>
+              <TrustRideBranding />
             </div>
 
             <nav className="flex flex-col gap-1 mt-2">
@@ -1389,10 +1395,7 @@ export default function Dashboard() {
             {/* Top header navigation row */}
             <header className="flex flex-col gap-4 bg-slate-950/20 border border-white/5 p-4 rounded-[20px] shadow-lg">
               <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <TrustRideLogo className="h-6 w-6" />
-                  <span className="text-xs font-bold tracking-wide uppercase text-cyan-400 font-mono">Governed Control Hub</span>
-                </div>
+                <TrustRideBranding />
                 
                 <div className="flex items-center gap-4 ml-auto">
                   <div className="relative">
