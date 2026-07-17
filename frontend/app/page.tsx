@@ -1118,7 +1118,7 @@ export default function Dashboard() {
                 const currentSpeed = tr103 ? (interpolatedSpeeds["TR-103"] ?? (tr103.isMoving ? 32 : 0)) : 32;
                 const relayState = tr103 ? (tr103.immobilized ? "OPEN" : "CLOSED") : "CLOSED";
                 const relayColor = relayState === "OPEN" ? "text-rose-400 font-extrabold" : "text-emerald-400";
-                const isHeld = tr103?.status === "HELD";
+                const isHeld = tr103 ? tr103.pendingCommand !== null : false;
                 
                 return (
                   <>
@@ -1138,7 +1138,7 @@ export default function Dashboard() {
                         </div>
                       </div>
                     </div>
-                    {tr103?.status === "HELD" ? (
+                    {isHeld ? (
                       <div className="text-[10px] text-center mt-3 font-mono leading-relaxed border-t border-white/5 pt-2 flex items-center justify-center gap-1.5 text-amber-400 animate-pulse">
                         <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                         Motion Interlock Active: Command IMMOBILIZE queued until vehicle stops.
