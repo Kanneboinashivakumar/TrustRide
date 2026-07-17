@@ -108,15 +108,15 @@ const TrustRideLogo = ({ className = "h-8 w-8", animate = false }: { className?:
         <stop offset="100%" stopColor="#3b82f6" /> {/* Blue */}
       </linearGradient>
     </defs>
-    {/* T top bar */}
-    <path d="M15 20 H50" stroke="url(#logoGrad)" strokeWidth="7.5" strokeLinecap="round" />
-    {/* T middle bar */}
-    <path d="M15 38 H38" stroke="url(#logoGrad)" strokeWidth="7.5" strokeLinecap="round" />
-    {/* T vertical stem */}
-    <path d="M30 20 V68" stroke="url(#logoGrad)" strokeWidth="7.5" strokeLinecap="round" />
-    {/* R loop */}
+    {/* T vertical stem at the left edge */}
+    <path d="M18 20 V68" stroke="url(#logoGrad)" strokeWidth="7.5" strokeLinecap="round" />
+    {/* T top bar extending right */}
+    <path d="M18 20 H50" stroke="url(#logoGrad)" strokeWidth="7.5" strokeLinecap="round" />
+    {/* T middle bar extending right */}
+    <path d="M18 38 H38" stroke="url(#logoGrad)" strokeWidth="7.5" strokeLinecap="round" />
+    {/* R loop starting from top bar and curving to middle bar */}
     <path d="M50 20 C68 20 68 38 50 38 H38" stroke="url(#logoGrad)" strokeWidth="7.5" strokeLinecap="round" strokeLinejoin="round" />
-    {/* R leg */}
+    {/* R leg extending down-right */}
     <path d="M48 38 L68 68" stroke="url(#logoGrad)" strokeWidth="7.5" strokeLinecap="round" />
   </svg>
 );
