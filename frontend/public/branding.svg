@@ -1,0 +1,23 @@
+<svg viewBox="0 0 450 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#22d3ee" />
+      <stop offset="100%" stopColor="#3b82f6" />
+    </linearGradient>
+    <style>
+      .title { font-family: 'Inter', system-ui, -apple-system, sans-serif; font-weight: 900; font-size: 32px; fill: #ffffff; letter-spacing: 2px; text-transform: uppercase; }
+      .subtitle { font-family: 'Inter', system-ui, -apple-system, sans-serif; font-weight: 750; font-size: 14px; fill: #94a3b8; letter-spacing: 3px; text-transform: uppercase; }
+    </style>
+  </defs>
+  <!-- Monogram Logo -->
+  <g transform="translate(10, 5)">
+    <path d="M15 20 H50" stroke="url(#logoGrad)" strokeWidth="7.5" strokeLinecap="round" />
+    <path d="M15 38 H38" stroke="url(#logoGrad)" strokeWidth="7.5" strokeLinecap="round" />
+    <path d="M30 20 V68" stroke="url(#logoGrad)" strokeWidth="7.5" strokeLinecap="round" />
+    <path d="M50 20 C68 20 68 38 50 38 H38" stroke="url(#logoGrad)" strokeWidth="7.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M48 38 L68 68" stroke="url(#logoGrad)" strokeWidth="7.5" strokeLinecap="round" />
+  </g>
+  <!-- Text Branding -->
+  <text x="105" y="44" class="title">TRUSTRIDE</text>
+  <text x="105" y="65" class="subtitle">AUDIT LEDGER CONSOLE</text>
+</svg>
