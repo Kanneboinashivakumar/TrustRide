@@ -288,24 +288,6 @@ Because the backend maintains simulated vehicle and command state **in-memory** 
 
 ---
 
-## 🎯 Demo Walkthrough (How to Present to Judges)
-
-To present TrustRide effectively, follow this structured demo checklist:
-
-1. **Start the Auto Demo**: Click the main blue button **START AUTO DEMO** on the landing page. It runs an automated 12-step script showing telemetry setup, command holding, stop-event execution, and attack interceptions.
-2. **Enable Presenter's Judge Mode**: Toggle **JUDGE HELPER** to **ACTIVE** in the left sidebar. This displays real-time pop-up overlays next to the vehicle stats explaining the underlying cryptography and telemetry interlocks.
-3. **Execute a Manual held Command**:
-   - Go to **Financier Control** and select `TR-103` (currently driving).
-   - Send an `IMMOBILIZE` command. Point out that the status goes to **HELD** and does not execute.
-   - Go to **Vehicle Sim**, select `TR-103`, and click **Stop Motor Telemetry**. Watch the vehicle speed drop to 0, which immediately releases the interlock and locks the vehicle.
-4. **Trigger Threat Sandbox Attacks**: Go to the **Financier** tab and run the **MITM** and **Replay** attacks. Show the judges the detailed cryptographic failure reasons thrown by the ECU.
-5. **Show Driver Dispute**: Go to the **Driver** tab, select `TR-101`, and click **Dispute Block**. Input dispute details and payment reference proof, then go to the **Audit Ledger** tab to inspect the immutable dispute block.
-6. **Simulate Ledger Forensics**:
-   - In the **Audit Ledger** tab, click **Tamper Mid-Entry**. Point out the system turning red and highlighting the exact broken block index.
-   - Click **Simulate Corrective Reset**. Explain that rather than silently fixing the DB record (erasing evidence), the system appends a new corrective block linking to the last valid hash, restoring chain integrity while preserving proof of the breach.
-
----
-
 ## 📈 Platform Impact & Compliance
 
 ### Impact Metrics
