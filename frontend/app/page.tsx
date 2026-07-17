@@ -1113,24 +1113,50 @@ export default function Dashboard() {
                   <span className="text-xs text-emerald-400 font-bold font-mono">ECU TRUST STORE ACTIVE</span>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-2.5 text-left text-xs font-mono mb-2">
-                <div className="bg-white/5 p-2.5 rounded-lg border border-white/5">
-                  <div className="text-muted-foreground text-[10px]">SPEED</div>
-                  <div className="text-sm font-bold text-cyan-400 mt-0.5">32 km/h</div>
-                </div>
-                <div className="bg-white/5 p-2.5 rounded-lg border border-white/5">
-                  <div className="text-muted-foreground text-[10px]">IGNITION RELAY</div>
-                  <div className="text-sm font-bold text-emerald-400 mt-0.5">CLOSED</div>
-                </div>
-                <div className="bg-white/5 p-2.5 rounded-lg border border-white/5">
-                  <div className="text-muted-foreground text-[10px]">SAFE QUEUE</div>
-                  <div className="text-sm font-bold text-amber-400 mt-0.5">1 PENDING</div>
-                </div>
-              </div>
-              <div className="text-[10px] text-muted-foreground text-center mt-3 font-mono leading-relaxed border-t border-white/5 pt-2 flex items-center justify-center gap-1.5 text-amber-300">
-                <AlertTriangle className="h-3.5 w-3.5" />
-                Motion Interlock Active: Command IMMOBILIZE queued until vehicle stops.
-              </div>
+              {(() => {
+                const tr103 = vehicles.find(v => v.vehicleId === "TR-103");
+                const currentSpeed = tr103 ? (interpolatedSpeeds["TR-103"] ?? (tr103.isMoving ? 32 : 0)) : 32;
+                const relayState = tr103 ? (tr103.immobilized ? "OPEN" : "CLOSED") : "CLOSED";
+                const relayColor = relayState === "OPEN" ? "text-rose-400 font-extrabold" : "text-emerald-400";
+                const isHeld = tr103?.status === "HELD";
+                
+                return (
+                  <>
+                    <div className="grid grid-cols-3 gap-2.5 text-left text-xs font-mono mb-2 mt-4">
+                      <div className="bg-white/5 p-2.5 rounded-lg border border-white/5">
+                        <div className="text-muted-foreground text-[10px]">SPEED</div>
+                        <div className="text-sm font-bold text-cyan-400 mt-0.5">{currentSpeed} km/h</div>
+                      </div>
+                      <div className="bg-white/5 p-2.5 rounded-lg border border-white/5">
+                        <div className="text-muted-foreground text-[10px]">IGNITION RELAY</div>
+                        <div className={`text-sm font-bold mt-0.5 ${relayColor}`}>{relayState}</div>
+                      </div>
+                      <div className="bg-white/5 p-2.5 rounded-lg border border-white/5">
+                        <div className="text-muted-foreground text-[10px]">SAFE QUEUE</div>
+                        <div className={`text-sm font-bold mt-0.5 ${isHeld ? "text-amber-400 font-extrabold" : "text-muted-foreground"}`}>
+                          {isHeld ? "1 PENDING" : "0 PENDING"}
+                        </div>
+                      </div>
+                    </div>
+                    {tr103?.status === "HELD" ? (
+                      <div className="text-[10px] text-center mt-3 font-mono leading-relaxed border-t border-white/5 pt-2 flex items-center justify-center gap-1.5 text-amber-400 animate-pulse">
+                        <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                        Motion Interlock Active: Command IMMOBILIZE queued until vehicle stops.
+                      </div>
+                    ) : tr103?.immobilized ? (
+                      <div className="text-[10px] text-center mt-3 font-mono leading-relaxed border-t border-white/5 pt-2 flex items-center justify-center gap-1.5 text-rose-400 font-bold">
+                        <Lock className="h-3.5 w-3.5 shrink-0" />
+                        Power Cut Confirmed: Vehicle safely immobilized.
+                      </div>
+                    ) : (
+                      <div className="text-[10px] text-center mt-3 font-mono leading-relaxed border-t border-white/5 pt-2 flex items-center justify-center gap-1.5 text-emerald-400">
+                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                        System Secure: ECU ignition checks nominal.
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </motion.div>
 
             {/* Action Buttons */}
@@ -1551,11 +1577,11 @@ export default function Dashboard() {
                       whileHover={{ y: -3 }}
                       className="bg-slate-950/40 border border-white/5 rounded-[20px] p-4 flex flex-col justify-between shadow-lg"
                     >
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider font-mono">FIRMWARE ACTIVE</span>
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider font-mono">VEHICLES OPERATIONAL</span>
                       <h3 className="text-2xl font-black mt-2 text-cyan-400">
                         <CountUp value={activeCount} /> <span className="text-xs text-muted-foreground font-normal">/ {totalVehiclesCount}</span>
                       </h3>
-                      <p className="text-[10px] text-muted-foreground mt-1">Vehicle trust keys matching Simulated HSM</p>
+                      <p className="text-[10px] text-muted-foreground mt-1">Vehicles with active ignition systems</p>
                     </motion.div>
 
                     <motion.div 
