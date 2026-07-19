@@ -25,18 +25,14 @@
 - [The Problem](#-the-problem)
 - [The Gap Nobody Fixed](#-the-gap-nobody-fixed)
 - [The TrustRide Solution](#-the-trustride-solution)
-- [Key Features](#-key-features)
 - [Platform Architecture](#-platform-architecture)
 - [The 5-Step Security Pipeline](#-the-5-step-security-pipeline)
 - [Threat Sandbox & Attack Simulations](#-threat-sandbox--attack-simulations)
 - [Screenshots](#-screenshots)
-- [Technology Stack](#-technology-stack)
 - [Getting Started](#-getting-started)
-- [Environment Variables](#-environment-variables)
 - [Deployment](#-deployment)
 - [Real-World Impact & Compliance](#-real-world-impact--compliance)
 - [Roadmap](#-roadmap)
-- [Contributing](#-contributing)
 - [License](#-license)
 
 ---
@@ -65,14 +61,13 @@ Banning the app doesn't remove the underlying pattern — it just removes one im
 
 TrustRide replaces informal, unauthenticated remote shutdown with a **decentralized, zero-trust cryptographic command verification pipeline**:
 
-- **The backend server is untrusted by design.** It cannot generate or sign authorization commands — it acts strictly as a relay with no unilateral power, even if fully compromised.
-- **On-board asymmetric signature verification.** Every command is signed by a simulated Hardware Security Module key slot and verified natively on the vehicle's ECU against a pre-provisioned trust store.
-- **Firmware-governed safety interlocks.** Telemetry is checked on the vehicle itself. A command issued while the vehicle is moving is held in a deferred state — the motor relay is disabled only once velocity reaches exactly 0 km/h.
-- **Tamper-evident chronological auditing.** Every command, dispute, and reset is written as a SHA-256 hash-chained block — any post-hoc tampering is immediately, provably visible.
+* **The backend server is untrusted by design.** It cannot generate or sign authorization commands — it acts strictly as a relay with no unilateral power, even if fully compromised.
+* **On-board asymmetric signature verification.** Every command is signed by a simulated Hardware Security Module key slot and verified natively on the vehicle's ECU against a pre-provisioned trust store.
+* **Firmware-governed safety interlocks.** Telemetry is checked on the vehicle itself. A command issued while the vehicle is moving is held in a deferred state — the motor relay is disabled only once velocity reaches exactly 0 km/h.
+* **Tamper-evident chronological auditing.** Every command, dispute, and reset is written as a SHA-256 hash-chained block — any post-hoc tampering is immediately, provably visible.
 
----
-
-## ✨ Key Features
+<details>
+<summary><b>🔍 View Key Features Table</b></summary>
 
 | Feature | Category | Description |
 |---|---|---|
@@ -89,11 +84,40 @@ TrustRide replaces informal, unauthenticated remote shutdown with a **decentrali
 | 🗺️ Digital Twin Map | Telemetry | Interactive map tracking simulated vehicles, routes, and live speed telemetry |
 | 📟 Simulated HSM Module | Hardware | Software emulation of a secure element — ECDSA key slot storage, signing, and verification |
 
+</details>
+
 ---
 
 ## 🏗 Platform Architecture
 
 TrustRide separates key management, transport, verification, and forensic logging into distinct trust boundaries:
+
+```mermaid
+graph TD
+    %% Nodes
+    F[Financier / NBFC Portal] -->|1. Sign command via HSM| HSM[Simulated HSM Key Store]
+    HSM -->|2. Encoded Signed Command| B[Backend Relay Server]
+    B -->|3. Relays command verbatim| ECU[Vehicle ECU Verifier]
+    
+    %% Telemetry Loop
+    GPS[Simulated GPS / Telemetry] -->|CAN Speed & Signal| ECU
+    
+    %% Output
+    ECU -->|4. Checks 1-4 Valid?| OK{Verification OK?}
+    OK -->|No: Log REJECTED| LEDG[Audit Ledger]
+    OK -->|Yes: Check 5 Speed| MOV{Is Speed > 0?}
+    MOV -->|Yes| HELD[Status: HELD in Buffer]
+    MOV -->|No| EXE[Status: EXECUTED - Cut Ignition]
+    
+    HELD -->|Wait for Speed = 0| EXE
+    EXE -->|5. Log EXECUTED| LEDG
+    
+    %% Dispute Loop
+    D[Driver Mobile View] -->|6. Log Dispute & Payment Ref| LEDG
+```
+
+<details>
+<summary><b>📖 Read Architectural Component Details</b></summary>
 
 ```
  Financier / NBFC Portal            Simulated HSM (Secure Element)
@@ -123,12 +147,29 @@ TrustRide separates key management, transport, verification, and forensic loggin
 ```
 
 **The core rule the whole system is built around:** the vehicle never trusts the backend — only a signature it verifies itself. Even a fully compromised backend cannot forge a valid, authorized shutdown command.
+</details>
 
 ---
 
 ## 🔒 The 5-Step Security Pipeline
 
-Before executing any remote override, the vehicle ECU runs every command through five sequential checkpoints, in strict order — if any step fails, the pipeline halts immediately and logs a `REJECTED` event:
+Before executing any remote override, the vehicle ECU runs every command through five sequential checkpoints, in strict order:
+
+```mermaid
+flowchart TD
+    Start[Command Received by ECU] --> Sig{1. Signature Valid?}
+    Sig -- No --> Reject[Log REJECTED & Terminate]
+    Sig -- Yes --> Exp{2. Timestamp Fresh?}
+    Exp -- No --> Reject
+    Exp -- Yes --> Replay{3. Nonce & ID Unique?}
+    Replay -- No --> Reject
+    Replay -- Yes --> Chain{4. Prior Hash Valid?}
+    Chain -- No --> Reject
+    Chain -- Yes --> Speed{5. Speed = 0 km/h?}
+    Speed -- No --> Hold[Log HELD in Buffer]
+    Speed -- Yes --> Execute[Log EXECUTED & Cut Power]
+    Hold --> |Telemetry detects stop| Execute
+```
 
 | # | Check | What it verifies |
 |---|---|---|
@@ -137,6 +178,17 @@ Before executing any remote override, the vehicle ECU runs every command through
 | 3 | **Replay / nonce** | Unique command ID and nonce checked against everything the vehicle has already seen |
 | 4 | **Hash-chain anchoring** | Command must reference the hash of the last successfully executed command on that vehicle |
 | 5 | **Motion interlock** | Reads speed telemetry — non-zero speed holds the command; execution proceeds only at 0 km/h |
+
+<details>
+<summary><b>🔧 View Advanced Technical Check Details</b></summary>
+
+1. **Check 1: Asymmetric Signature Check**: The command fields (Issuer, Action, Nonce, Timestamp) are canonicalized, hashed, and verified against the issuer's public key in the ECU trust store.
+2. **Check 2: Freshness Window Check**: System compares the current time with the command timestamp. If it exceeds 5 minutes, it is flagged as expired and discarded.
+3. **Check 3: Nonce/Replay Check**: The unique command ID and nonce are verified against the local vehicle log. If seen previously, it is rejected.
+4. **Check 4: Hash-Chain Anchoring**: The command must specify the correct hash of the last successfully executed command on that vehicle. If it points to an invalid or stale block, the chain verification fails.
+5. **Check 5: Safety Interlock Check**: Reads CAN speed telemetry. If speed is non-zero, command execution is held, maintaining motor power. Execution proceeds only when velocity reaches 0.
+
+</details>
 
 ---
 
@@ -158,44 +210,36 @@ An interactive sandbox lets you trigger real exploit patterns and watch the ECU 
 
 ## 📸 Screenshots
 
-**Landing page — live ECU status on the hero itself**
-
+#### Landing Page & Hero Section
 ![TrustRide landing page](./docs/screenshots/landing.png)
 
-**Control center — fleet telemetry, threat stats, and the governance pipeline**
-
+#### Control Center Overview
 ![TrustRide dashboard overview](./docs/screenshots/dashboard.png)
 
-**Threat Sandbox — detailed cryptographic intercept reports**
-
+#### Threat Sandbox & Command Dispatcher
 ![Financier Sandbox Screenshot](./docs/screenshots/sandbox.png)
 
-**Digital Twin Map — real-time Hyderabad road navigation**
-
+#### Digital Twin Telemetry Map
 ![Vehicle Simulator Screenshot](./docs/screenshots/simulator.png)
 
-**Audit Ledger Console — forensic proof of chain tampering**
-
+#### Cryptographic Audit Ledger Forensics
 ![Audit Ledger Screenshot](./docs/screenshots/ledger.png)
 
 ---
 
-## 💻 Technology Stack
+## 💻 Technology Stack & Setup
+
+<details>
+<summary><b>🛠 View Technology Stack Details</b></summary>
 
 * **Frontend** — Next.js 14 (React 18), TypeScript, TailwindCSS, Framer Motion, Lucide React
 * **Backend** — Node.js, Express (REST API), native `crypto` (ECDSA P-256 + SHA-256), `tsx` runtime
 * **Security** — custom 5-step ECU verifier engine, custom SHA-256 hash-chain audit log
 * **Hosting** — Render (long-lived containers — required, since in-memory state can't survive serverless recycling)
 
----
+</details>
 
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js v18.x or v22.x
-- npm v9.x or later
-
-### Quick start
+### Getting Started
 
 ```bash
 git clone https://github.com/Kanneboinashivakumar/TrustRide.git
@@ -233,9 +277,11 @@ Open `http://localhost:3000`.
 
 ---
 
-## 🌐 Environment Variables
+## 🌐 Environment Variables & Deployment
 
-Local development has pre-configured fallbacks. For a production deployment, set:
+### Environment Variables
+
+For local development, default fallbacks are pre-configured. For production environments, configure these variables:
 
 **`frontend/.env.production`**
 ```bash
@@ -249,8 +295,10 @@ NEXT_PUBLIC_API_BASE=https://trustride-backend.onrender.com/api
 
 Because vehicle and command state lives in-memory (no database dependency for the demo), the backend needs a **persistent, long-lived server process** — standard serverless functions recycle and wipe that state.
 
-**Backend on Render:** New Web Service → root directory `backend` → build `npm install` → start `npm start`.
-**Frontend on Render:** New Web Service → root directory `frontend` → build `npm install && npm run build` → start `npm start` → set `NEXT_PUBLIC_API_BASE` to `https://<your-backend>.onrender.com/api`.
+For complete cloud deployment configurations (including environment variable setups and Render instance maps), see the [Detailed Production Deployment Documentation](./docs/ARCHITECTURE.md#production-deployment-strategy).
+
+* **Backend on Render:** Deploy Web Service $\rightarrow$ root directory `backend` $\rightarrow$ build `npm install` $\rightarrow$ start `npm start`.
+* **Frontend on Render:** Deploy Web Service $\rightarrow$ root directory `frontend` $\rightarrow$ build `npm install && npm run build` $\rightarrow$ start `npm start` $\rightarrow$ set `NEXT_PUBLIC_API_BASE` to your backend URL.
 
 > Render's free tier spins the backend down after ~15 minutes idle — the first request after that takes ~30-50s to wake it. Warm it up before a live demo.
 
@@ -277,12 +325,6 @@ Because vehicle and command state lives in-memory (no database dependency for th
 - [ ] **Multi-signature policies** — require multiple distinct financier signatures for immobilization
 - [ ] **Offline verification** — fallback verification via time-based one-time tokens
 - [ ] **Beyond e-rickshaws** — the same governance layer extends to e-two-wheelers, e-autos, and fleet/last-mile delivery EVs using the same BMS/VCU pattern
-
----
-
-## 🤝 Contributing
-
-Issues and pull requests are welcome — see [Issues](../../issues) to report a bug or propose a feature.
 
 ---
 
