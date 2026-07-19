@@ -12,7 +12,6 @@
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-38B2AC?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![ECDSA](https://img.shields.io/badge/Crypto-ECDSA_P--256-8A2BE2?style=for-the-badge)](#-the-5-step-security-pipeline)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](./LICENSE)
-[![Built for](https://img.shields.io/badge/Built_for-Operation_Cipher_2026-22D3EE?style=for-the-badge)](#)
 
 [Live Demo](https://trustride-frontend.onrender.com) · [Backend API](https://trustride-backend.onrender.com) · [Technical Docs](./docs/ARCHITECTURE.md) · [Report a Bug](../../issues)
 
@@ -336,8 +335,6 @@ Licensed under the [MIT License](./LICENSE).
 
 <div align="center">
 
-**Built for Operation Cipher 2026** — Kanneboina Shiva Kumar
-
-*Plan the mission. Build the solution. Execute the heist.*
+**Built by Kanneboina Shiva Kumar**
 
 </div>
