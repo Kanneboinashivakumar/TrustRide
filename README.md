@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="branding.jpg" alt="TrustRide Logo" width="520">
+<img src="assets/branding.svg" alt="TrustRide Logo" width="520">
 
 ### Zero-Trust, Decentralized Cryptographic Remote EV Governance Platform
 
