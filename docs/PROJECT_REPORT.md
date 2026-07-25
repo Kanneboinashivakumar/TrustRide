@@ -1,6 +1,6 @@
 # TrustRide: Zero-Trust Cryptographic Remote EV Governance & Motion-Safe Asset Immobilization Platform
 
-![TrustRide Platform Logo](C:\Users\kshiv\.gemini\antigravity\brain\0476dc12-cff5-45bc-8fc9-8f4f2d6c9a67\TrustRideBranding.png)
+![TrustRide Header Logo](../assets/TrustRideBranding.png)
 
 **Comprehensive Technical Project Report & Hackathon Submission Document**  
 *Author: Shiva Kumar | Team TrustRide | July 2026*
@@ -19,7 +19,7 @@ Commercial electric 3-wheelers (e-rickshaws) and 2-wheelers form the economic ba
 
 In July 2026, third-party Android applications (such as *BAT-BMS*) went viral in India after security researchers discovered that cheap, off-the-shelf Battery Management Systems (BMS) accept unauthenticated Bluetooth Low Energy (BLE) commands. Anyone with a smartphone within wireless range could cut power to an active e-rickshaw accelerating through a busy intersection.
 
-While government regulatory bodies banned the specific malicious applications within days, the ban fixed the exploit vector without resolving the underlying architectural flaw. The apps were originally legitimate tools built for financiers and fleet operators. Banning the app did not fix the unsafe, unauthenticated design of legacy remote vehicle controls.
+While regulatory authorities quickly banned the specific malicious mobile applications within days, the ban fixed the exploit vector without resolving the underlying architectural flaw. The apps were originally legitimate tools built for financiers and fleet operators. Banning the app did not fix the unsafe, unauthenticated design of legacy remote vehicle controls.
 
 ```mermaid
 graph TD
@@ -315,7 +315,7 @@ TrustRide is designed **with reference to** international automotive safety and 
 
 ## 14. Future Technical Roadmap (2026–2027+)
 
-![TrustRide 2026-2027 Roadmap Infographic](C:\Users\kshiv\.gemini\antigravity\brain\0476dc12-cff5-45bc-8fc9-8f4f2d6c9a67\TrustRideRoadmap.jpg)
+![TrustRide 2026-2027 Roadmap Infographic](../assets/TrustRideRoadmap.jpg)
 
 - **Phase 1 (Q3 2026) — Automotive CAN-Bus Microcontrollers**: Compiling ECU verifier logic directly onto automotive-grade microcontrollers (Infineon AURIX TC3xx / STM32 Automotive).
 - **Phase 2 (Q4 2026) — Hardware Security Modules (HSM)**: Upgrading software key storage to dedicated hardware security chips (Microchip ATECC608B / NXP SE050).
