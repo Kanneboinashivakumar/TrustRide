@@ -312,7 +312,7 @@ export default function Dashboard() {
         }
       } catch (err: any) {
         if (active) {
-          setApiError(`Backend connection offline. Ensure backend service is running on port 4000.`);
+          setApiError(`⚡ Waking Up Free-Tier Cloud Backend — Render backend is awakening from idle sleep (first load takes 30-45s). Please hold...`);
           setIsLoading(false);
         }
       }

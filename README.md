@@ -15,6 +15,8 @@
 
 [Live Demo](https://trustride-frontend.onrender.com) · [Backend API](https://trustride-backend.onrender.com) · [Technical Docs](./docs/ARCHITECTURE.md) · [Report a Bug](../../issues)
 
+> ⚡ **Note on Free-Tier Hosting**: Deployed on Render free tier. If idle, first load may take ~30–45s to wake up the cloud instance. The app UI includes auto-wakeup status handling.
+
 </div>
 
 ---
