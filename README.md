@@ -1,7 +1,10 @@
 <div align="center">
-  <img src="assets/TrustRideBranding.png" alt="TrustRide Logo" width="460">
-  <h2 align="center" style="border-bottom: none; margin-top: 10px;">Zero-Trust, Decentralized Cryptographic Remote EV Governance Platform</h2>
-  <p><i>Governed & safe remote immobilization — for a system nobody currently has to answer to.</i></p>
+
+<img src="assets/TrustRideBranding.png" alt="TrustRide Logo" width="480">
+
+### Zero-Trust, Decentralized Cryptographic Remote EV Governance Platform
+
+*Governed & safe remote immobilization — for a system nobody currently has to answer to.*
 
 [![Next.js](https://img.shields.io/badge/Next.js-14-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25_typesafe-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
