@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import dynamic from "next/dynamic";
+import type { MapVehicle, MapRoute } from "../components/LeafletMap";
+
+// ponytail: SSR off — Leaflet needs window
+const LeafletMap = dynamic(() => import("../components/LeafletMap"), { ssr: false });
 import { 
   Shield, 
   ShieldAlert, 
@@ -66,64 +71,68 @@ interface DemoStep {
   checkLayer?: string;
 }
 
-// Hyderabad Geographic Waypoints Configuration (800x600 coordinate grid space)
-const TR101_WAYPOINTS = [
-  { x: 80, y: 310, lat: 17.4150, lng: 78.3410 },
-  { x: 160, y: 340, lat: 17.4220, lng: 78.3480 },
-  { x: 220, y: 280, lat: 17.4480, lng: 78.3740 },
-  { x: 280, y: 240, lat: 17.4490, lng: 78.3910 },
-  { x: 360, y: 220, lat: 17.4280, lng: 78.4120 },
-  { x: 420, y: 260, lat: 17.4200, lng: 78.4420 }
+// Real Hyderabad Road Coordinates (HITEC City, Gachibowli, Madhapur Road Loops)
+const TR101_ROAD_LOOP: [number, number][] = [
+  [17.4435, 78.3772], // Cyber Towers Junction
+  [17.4465, 78.3775], // Hitec City Main Rd North
+  [17.4490, 78.3810], // Hitec City Metro / Shilparamam
+  [17.4475, 78.3840], // Inorbit Mall Rd Junction
+  [17.4435, 78.3830], // Mindspace Junction
+  [17.4410, 78.3800], // VITT Mallya Rd
+  [17.4435, 78.3772]  // Cyber Towers Junction
 ];
 
-const TR102_WAYPOINTS = [
-  { x: 620, y: 140, lat: 17.4340, lng: 78.5010 },
-  { x: 500, y: 170, lat: 17.4370, lng: 78.4480 },
-  { x: 520, y: 210, lat: 17.4290, lng: 78.4700 },
-  { x: 560, y: 250, lat: 17.4210, lng: 78.4800 },
-  { x: 480, y: 290, lat: 17.4110, lng: 78.4610 },
-  { x: 400, y: 270, lat: 17.4180, lng: 78.4350 }
+const TR102_ROAD_LOOP: [number, number][] = [
+  [17.4250, 78.3420], // Wipro Circle
+  [17.4280, 78.3425], // Financial District Rd
+  [17.4310, 78.3460], // Microsoft Junction
+  [17.4290, 78.3510], // ISB Road
+  [17.4240, 78.3515], // Gachibowli Stadium Rd
+  [17.4220, 78.3460], // Nanakramguda Rd
+  [17.4250, 78.3420]  // Wipro Circle
 ];
 
-const TR103_WAYPOINTS = [
-  { x: 150, y: 90, lat: 17.4850, lng: 78.3880 },
-  { x: 200, y: 180, lat: 17.4600, lng: 78.3800 },
-  { x: 220, y: 280, lat: 17.4480, lng: 78.3740 },
-  { x: 160, y: 340, lat: 17.4220, lng: 78.3480 },
-  { x: 100, y: 320, lat: 17.4150, lng: 78.3410 },
-  { x: 110, y: 200, lat: 17.4450, lng: 78.3320 }
+const TR103_ROAD_LOOP: [number, number][] = [
+  [17.4410, 78.3910], // Durgam Cheruvu Cable Bridge Approach
+  [17.4430, 78.3940], // Madhapur Main Rd
+  [17.4400, 78.3980], // Kavuri Hills Junction
+  [17.4360, 78.3960], // Jubilee Hills Road No 36
+  [17.4375, 78.3920], // Cable Bridge East
+  [17.4410, 78.3910]  // Cable Bridge Approach
 ];
 
-// Reusable Official TrustRide TR Monogram Logo Component
+// Linear interpolation function between key waypoints to generate smooth road paths
+function generateDensePath(waypoints: [number, number][], pointsPerSegment = 8): [number, number][] {
+  const path: [number, number][] = [];
+  for (let i = 0; i < waypoints.length - 1; i++) {
+    const [lat1, lng1] = waypoints[i];
+    const [lat2, lng2] = waypoints[i + 1];
+    for (let step = 0; step < pointsPerSegment; step++) {
+      const t = step / pointsPerSegment;
+      path.push([
+        lat1 + (lat2 - lat1) * t,
+        lng1 + (lng2 - lng1) * t
+      ]);
+    }
+  }
+  path.push(waypoints[waypoints.length - 1]);
+  return path;
+}
+
+const TR101_DENSE_PATH = generateDensePath(TR101_ROAD_LOOP);
+const TR102_DENSE_PATH = generateDensePath(TR102_ROAD_LOOP);
+const TR103_DENSE_PATH = generateDensePath(TR103_ROAD_LOOP);
+
+// Reusable Official TrustRide TR Monogram Logo Component — uses user's emblem image
 const TrustRideLogo = ({ className = "h-8 w-8", animate = false }: { className?: string; animate?: boolean }) => (
-  <svg 
-    viewBox="0 0 100 80" 
-    fill="none" 
-    xmlns="http://www.w3.org/2000/svg" 
-    className={`${className} ${animate ? "animate-pulse" : ""}`}
-    aria-label="TrustRide Monogram Logo"
-    role="img"
-  >
-    <defs>
-      <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#22d3ee" /> {/* Cyan */}
-        <stop offset="100%" stopColor="#3b82f6" /> {/* Blue */}
-      </linearGradient>
-    </defs>
-    {/* T vertical stem at the left edge */}
-    <path d="M18 20 V68" stroke="url(#logoGrad)" strokeWidth="7.5" strokeLinecap="round" />
-    {/* T top bar extending right */}
-    <path d="M18 20 H50" stroke="url(#logoGrad)" strokeWidth="7.5" strokeLinecap="round" />
-    {/* T middle bar extending right */}
-    <path d="M18 38 H38" stroke="url(#logoGrad)" strokeWidth="7.5" strokeLinecap="round" />
-    {/* R loop starting from top bar and curving to middle bar */}
-    <path d="M50 20 C68 20 68 38 50 38 H38" stroke="url(#logoGrad)" strokeWidth="7.5" strokeLinecap="round" strokeLinejoin="round" />
-    {/* R leg extending down-right */}
-    <path d="M48 38 L68 68" stroke="url(#logoGrad)" strokeWidth="7.5" strokeLinecap="round" />
-  </svg>
+  <img
+    src="/tr_emblem.png"
+    alt="TrustRide Logo"
+    className={`${className} object-contain ${animate ? "animate-pulse" : ""}`}
+  />
 );
 
-// Reusable Official TrustRide Branding Component matching the requested style exactly
+// Reusable Official TrustRide Branding Component matching user's requested layout
 const TrustRideBranding = ({ className = "" }: { className?: string }) => (
   <div className={`flex items-center gap-2.5 ${className}`}>
     <TrustRideLogo className="h-9 w-9 shrink-0" />
@@ -202,14 +211,20 @@ export default function Dashboard() {
 
   // Selected Twin ID inside Simulator Map
   const [selectedTwinId, setSelectedTwinId] = useState<string>("TR-103");
-  const [hoveredVehicleId, setHoveredVehicleId] = useState<string | null>(null);
-  const [zoomLevel, setZoomLevel] = useState<number>(1);
 
-  // Simulated GPS Positions for the Digital Twin Map (Hyderabad Coordinates style)
+
+  // Simulated GPS Positions for the Digital Twin Map (Dense Hyderabad Road Loops)
   const [vehicleMapPositions, setVehicleMapPositions] = useState<Record<string, { x: number; y: number; lat: number; lng: number; index: number }>>({
-    "TR-101": { ...TR101_WAYPOINTS[0], index: 0 },
-    "TR-102": { ...TR102_WAYPOINTS[0], index: 0 },
-    "TR-103": { ...TR103_WAYPOINTS[0], index: 0 }
+    "TR-101": { x: 0, y: 0, lat: TR101_DENSE_PATH[0][0], lng: TR101_DENSE_PATH[0][1], index: 0 },
+    "TR-102": { x: 0, y: 0, lat: TR102_DENSE_PATH[0][0], lng: TR102_DENSE_PATH[0][1], index: 0 },
+    "TR-103": { x: 0, y: 0, lat: TR103_DENSE_PATH[0][0], lng: TR103_DENSE_PATH[0][1], index: 0 }
+  });
+
+  // Historical coordinates visited by each vehicle for Rapido-style polyline trail
+  const [traveledHistory, setTraveledHistory] = useState<Record<string, [number, number][]>>({
+    "TR-101": [[TR101_DENSE_PATH[0][0], TR101_DENSE_PATH[0][1]]],
+    "TR-102": [[TR102_DENSE_PATH[0][0], TR102_DENSE_PATH[0][1]]],
+    "TR-103": [[TR103_DENSE_PATH[0][0], TR103_DENSE_PATH[0][1]]]
   });
 
   // Dynamic visual attack/threat animation state triggers
@@ -333,43 +348,38 @@ export default function Dashboard() {
     return () => clearInterval(timer);
   }, [vehicles]);
 
-  // Digital Twin Map coordinates interpolation loop (50ms interval - Hyderabad City style)
+  // Digital Twin Map coordinates smooth interpolation loop along dense road paths
   useEffect(() => {
     const mapTimer = setInterval(() => {
-      setVehicleMapPositions(prev => {
-        const next = { ...prev };
+      setVehicleMapPositions(prevPos => {
+        const nextPos = { ...prevPos };
         let changed = false;
+
         vehicles.forEach(v => {
           const isMoving = v.isMoving && !v.immobilized;
           if (!isMoving) return; 
 
           changed = true;
-          const pos = prev[v.vehicleId] || { ...TR101_WAYPOINTS[0], index: 0 };
-          
-          let waypoints = TR101_WAYPOINTS;
-          if (v.vehicleId === "TR-102") {
-            waypoints = TR102_WAYPOINTS;
-          } else if (v.vehicleId === "TR-103") {
-            waypoints = TR103_WAYPOINTS;
-          }
+          const densePath = v.vehicleId === "TR-102" ? TR102_DENSE_PATH : v.vehicleId === "TR-103" ? TR103_DENSE_PATH : TR101_DENSE_PATH;
+          const currentPos = prevPos[v.vehicleId] || { x: 0, y: 0, lat: densePath[0][0], lng: densePath[0][1], index: 0 };
+          const nextIndex = (currentPos.index + 1) % densePath.length;
+          const point: [number, number] = [densePath[nextIndex][0], densePath[nextIndex][1]];
 
-          const nextIndex = (pos.index + 1) % (waypoints.length * 40); 
-          const segmentIndex = Math.floor(nextIndex / 40);
-          const segmentProgress = (nextIndex % 40) / 40;
-          
-          const currentWp = waypoints[segmentIndex];
-          const nextWp = waypoints[(segmentIndex + 1) % waypoints.length];
-          
-          const x = currentWp.x + (nextWp.x - currentWp.x) * segmentProgress;
-          const y = currentWp.y + (nextWp.y - currentWp.y) * segmentProgress;
-          const lat = currentWp.lat + (nextWp.lat - currentWp.lat) * segmentProgress;
-          const lng = currentWp.lng + (nextWp.lng - currentWp.lng) * segmentProgress;
+          nextPos[v.vehicleId] = { x: 0, y: 0, lat: point[0], lng: point[1], index: nextIndex };
 
-          next[v.vehicleId] = { x, y, lat, lng, index: nextIndex };
+          // Append to historical traveled trail for Rapido-style polyline rendering
+          setTraveledHistory(prevHist => {
+            const currentHist = prevHist[v.vehicleId] || [];
+            if (nextIndex === 0) {
+              return { ...prevHist, [v.vehicleId]: [point] };
+            }
+            return { ...prevHist, [v.vehicleId]: [...currentHist, point] };
+          });
         });
-        return changed ? next : prev;
+
+        return changed ? nextPos : prevPos;
       });
-    }, 50);
+    }, 450); // 450ms = steady smooth urban pace
     return () => clearInterval(mapTimer);
   }, [vehicles]);
 
@@ -1012,70 +1022,7 @@ export default function Dashboard() {
   // Compute active vehicle details
   const activeTwinVehicle = vehicles.find(v => v.vehicleId === selectedTwinId) || vehicles[0] || { vehicleId: "TR-103", driverName: "Amit Singh", immobilized: false, isMoving: true, pendingCommand: null };
 
-  // Helper to calculate marker driving heading direction dynamically based on route segments
-  const getHeading = (vehicleId: string) => {
-    const pos = vehicleMapPositions[vehicleId];
-    if (!pos) return 0;
 
-    let waypoints = TR101_WAYPOINTS;
-    if (vehicleId === "TR-102") {
-      waypoints = TR102_WAYPOINTS;
-    } else if (vehicleId === "TR-103") {
-      waypoints = TR103_WAYPOINTS;
-    }
-
-    const segmentIndex = Math.floor(pos.index / 40) % waypoints.length;
-    const currentWp = waypoints[segmentIndex];
-    const nextWp = waypoints[(segmentIndex + 1) % waypoints.length];
-    if (!currentWp || !nextWp) return 0;
-
-    const dx = nextWp.x - currentWp.x;
-    const dy = nextWp.y - currentWp.y;
-    return Math.atan2(dy, dx) * (180 / Math.PI);
-  };
-
-  // Helper to dynamically draw traveled cyan/red trails
-  const getTraveledPath = (vehicleId: string) => {
-    const pos = vehicleMapPositions[vehicleId];
-    if (!pos) return "";
-
-    let waypoints = TR101_WAYPOINTS;
-    if (vehicleId === "TR-102") {
-      waypoints = TR102_WAYPOINTS;
-    } else if (vehicleId === "TR-103") {
-      waypoints = TR103_WAYPOINTS;
-    }
-
-    const segmentIndex = Math.floor(pos.index / 40) % waypoints.length;
-    let pathStr = `M ${waypoints[0].x} ${waypoints[0].y}`;
-    for (let i = 1; i <= segmentIndex; i++) {
-      pathStr += ` L ${waypoints[i].x} ${waypoints[i].y}`;
-    }
-    pathStr += ` L ${pos.x} ${pos.y}`;
-    return pathStr;
-  };
-
-  // Helper to draw remaining dotted ahead paths
-  const getRemainingPath = (vehicleId: string) => {
-    const pos = vehicleMapPositions[vehicleId];
-    if (!pos) return "";
-
-    let waypoints = TR101_WAYPOINTS;
-    if (vehicleId === "TR-102") {
-      waypoints = TR102_WAYPOINTS;
-    } else if (vehicleId === "TR-103") {
-      waypoints = TR103_WAYPOINTS;
-    }
-
-    const segmentIndex = Math.floor(pos.index / 40) % waypoints.length;
-    let pathStr = `M ${pos.x} ${pos.y}`;
-    for (let i = segmentIndex + 1; i < waypoints.length; i++) {
-      pathStr += ` L ${waypoints[i].x} ${waypoints[i].y}`;
-    }
-    // Connect back to start to close loop
-    pathStr += ` L ${waypoints[0].x} ${waypoints[0].y}`;
-    return pathStr;
-  };
 
   // Analytics Metrics computations
   const totalVehiclesCount = vehicles.length;
@@ -1091,13 +1038,7 @@ export default function Dashboard() {
   // Active threat validation for glowing map border red
   const isThreatActive = attackEffect?.type !== null || (demoActive && currentDemoStepIndex >= 5 && currentDemoStepIndex <= 10);
 
-  // Dynamic SVG ViewBox Zoom Calculations
-  const baseWidth = 800;
-  const baseHeight = 600;
-  const viewWidth = baseWidth / zoomLevel;
-  const viewHeight = baseHeight / zoomLevel;
-  const viewX = (baseWidth - viewWidth) / 2;
-  const viewY = (baseHeight - viewHeight) / 2;
+  // ponytail: SVG viewbox calculations removed — Leaflet handles zoom natively
 
   return (
     <div className="flex-1 flex flex-col relative text-sans">
@@ -2371,7 +2312,7 @@ export default function Dashboard() {
                     <div className="absolute top-4 left-4 z-20 flex flex-col gap-1.5 font-mono text-[9px] uppercase">
                       <div className="bg-slate-950/80 px-2.5 py-1 rounded border border-white/10 text-cyan-400 flex items-center gap-1.5">
                         <Activity className="h-3.5 w-3.5 animate-pulse" />
-                        STYLIZED HYDERABAD DIGITAL TWIN (SIMULATED)
+                        LIVE MAP — SIMULATED TELEMETRY
                       </div>
                       <div className="bg-slate-950/80 px-2.5 py-1 rounded border border-white/10 text-slate-350">
                         Active: {activeCount} | Locked: {immobilizedCount}
@@ -2408,289 +2349,39 @@ export default function Dashboard() {
                       </div>
                     )}
 
-                    {/* Hover tooltip popup overlay positioned dynamically using coordinates percentage mapping */}
-                    {hoveredVehicleId && (() => {
-                      const v = vehicles.find(veh => veh.vehicleId === hoveredVehicleId);
-                      const pos = vehicleMapPositions[hoveredVehicleId];
-                      if (!v || !pos) return null;
-                      return (
-                        <div 
-                          className="absolute z-30 bg-slate-950/90 border border-cyan-500/35 backdrop-blur-md rounded-xl p-3 shadow-2xl text-[10px] font-mono w-44 pointer-events-none flex flex-col gap-1"
-                          style={{ left: `${(pos.x / 800) * 100}%`, top: `${(pos.y / 600) * 100 - 6}%`, transform: 'translate(-50%, -100%)' }}
-                        >
-                          <div className="flex justify-between font-bold text-cyan-400 border-b border-white/5 pb-1">
-                            <span>{v.vehicleId}</span>
-                            <span className={v.immobilized ? "text-rose-400" : "text-emerald-400"}>
-                              {v.immobilized ? "🔒 LOCKED" : "🔓 ACTIVE"}
-                            </span>
-                          </div>
-                          <div>Driver: {v.driverName}</div>
-                          <div>Speed: {interpolatedSpeeds[v.vehicleId] ?? 0} km/h</div>
-                          <div>Battery: {batteryLevels[v.vehicleId]}%</div>
-                          <div>Signal: {signalStrengths[v.vehicleId]}/4</div>
-                          <div className="text-[8.5px] text-muted-foreground mt-0.5">{pos.lat.toFixed(4)}° N, {pos.lng.toFixed(4)}° E</div>
-                        </div>
-                      );
-                    })()}
-
-                    {/* The grand detailed Map SVG viewport */}
-                    <div className="flex-1 flex items-center justify-center p-4">
-                      <svg 
-                        viewBox={`${viewX} ${viewY} ${viewWidth} ${viewHeight}`} 
-                        className="w-full max-w-[800px] h-auto transition-all duration-300 ease-out" 
-                        fill="none" 
-                        xmlns="http://www.w3.org/2000/svg"
-                        aria-label="Stylized Simulated Hyderabad Digital Twin Map Layout"
-                        role="img"
-                      >
-                        <defs>
-                          <linearGradient id="cyanMapGlow" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.85" />
-                            <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.45" />
-                          </linearGradient>
-                          <linearGradient id="redMapGlow" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.85" />
-                            <stop offset="100%" stopColor="#ef4444" stopOpacity="0.45" />
-                          </linearGradient>
-                          <pattern id="dotMapGrid" width="24" height="24" patternUnits="userSpaceOnUse">
-                            <circle cx="12" cy="12" r="0.75" fill="#1f2937" />
-                          </pattern>
-                        </defs>
-
-                        {/* Dot map grid base */}
-                        <rect width="800" height="600" fill="url(#dotMapGrid)" />
-
-                        {/* Soft green parks polygons (KBR Park & Sanjeevaiah Park) */}
-                        {/* KBR National Park (Jubilee Hills) */}
-                        <path 
-                          d="M 310,230 C 330,225 350,235 355,250 C 350,270 330,285 305,280 C 295,260 295,245 310,230 Z" 
-                          fill="#13271c" 
-                          stroke="#1b3827" 
-                          strokeWidth="0.8" 
-                        />
-                        <text x="325" y="260" fill="#22c55e" className="font-mono text-[7px] opacity-60 select-none" textAnchor="middle">KBR PARK</text>
-
-                        {/* Sanjeevaiah Park (North of Hussain Sagar) */}
-                        <path 
-                          d="M 490,175 C 510,165 530,175 535,190 C 520,205 500,200 490,175 Z" 
-                          fill="#13271c" 
-                          stroke="#1b3827" 
-                          strokeWidth="0.8" 
-                        />
-
-                        {/* Hussain Sagar Lake (Detailed organic shoreline structure instead of simple shape) */}
-                        <path 
-                          d="M 505,205 C 490,185 450,195 442,225 C 435,255 450,280 485,305 C 510,320 545,310 562,285 C 575,260 580,225 558,212 C 540,200 520,220 505,205 Z" 
-                          fill="#16202c" 
-                          stroke="#1e3247" 
-                          strokeWidth="2" 
-                        />
-                        <text x="502" y="265" fill="#38bdf8" className="font-mono font-bold text-[8px] select-none text-center opacity-85" textAnchor="middle">
-                          HUSSAIN SAGAR
-                        </text>
-                        {/* Buddha Statue inside lake */}
-                        <circle cx="502" cy="255" r="3.5" fill="#38bdf8" className="animate-pulse" />
-
-                        {/* Outer Ring Road (ORR) Expressway border ring */}
-                        <ellipse cx="400" cy="300" rx="365" ry="265" stroke="#1e293b" strokeWidth="5.5" fill="none" />
-                        <ellipse cx="400" cy="300" rx="365" ry="265" stroke="#eab308" strokeWidth="1.2" strokeDasharray="10,6" fill="none" />
-                        <text x="400" y="580" fill="#475569" className="font-mono font-black text-[9px] tracking-widest select-none" textAnchor="middle">
-                          OUTER RING ROAD (ORR) EXPRESSWAY
-                        </text>
-
-                        {/* Google Maps / Mapbox Highway Centerline Styling (Outlined gray with yellow/orange core) */}
-                        {/* Highway 1: Mumbai Highway NH65 through Kukatpally, Madhapur, Begumpet to Secunderabad */}
-                        <path d="M 50 120 C 150 90, 240 180, 380 240 C 450 220, 520 180, 620 140" stroke="#1e293b" strokeWidth="4.5" fill="none" />
-                        <path d="M 50 120 C 150 90, 240 180, 380 240 C 450 220, 520 180, 620 140" stroke="#ff9e1b" strokeWidth="1.8" fill="none" />
-
-                        {/* Highway 2: Financial District -> Gachibowli -> HITEC City -> Madhapur -> Jubilee Hills -> Banjara Hills */}
-                        <path d="M 80 310 Q 160 340, 220 280 T 280 240 T 360 220 T 420 260" stroke="#1e293b" strokeWidth="4" fill="none" />
-                        <path d="M 80 310 Q 160 340, 220 280 T 280 240 T 360 220 T 420 260" stroke="#ff9e1b" strokeWidth="1.5" fill="none" />
-
-                        {/* Highway 3: Secunderabad -> Begumpet -> Hussain Sagar East -> Khairatabad -> Banjara Hills */}
-                        <path d="M 620 140 Q 500 170, 520 210 T 560 250 T 480 290 T 400 270" stroke="#1e293b" strokeWidth="4" fill="none" />
-                        <path d="M 620 140 Q 500 170, 520 210 T 560 250 T 480 290 T 400 270" stroke="#ff9e1b" strokeWidth="1.5" fill="none" />
-
-                        {/* Airport PVNR Expressway connecting Banjara Hills straight south to Shamshabad Airport */}
-                        <path d="M 380 240 L 400 520" stroke="#1e293b" strokeWidth="5" fill="none" />
-                        <path d="M 380 240 L 400 520" stroke="#ff9e1b" strokeWidth="2" fill="none" />
-
-                        {/* Secondary urban residential streets (drawn in light gray) */}
-                        <g stroke="#1f2937" strokeWidth="1.2">
-                          {/* Gachibowli sector streets */}
-                          <line x1="80" y1="310" x2="140" y2="280" />
-                          <line x1="140" y1="280" x2="220" y2="280" />
-                          <line x1="160" y1="340" x2="200" y2="380" />
-                          <line x1="80" y1="350" x2="160" y2="400" />
-                          {/* HITEC City sector streets */}
-                          <line x1="220" y1="280" x2="200" y2="180" />
-                          <line x1="200" y1="180" x2="150" y2="140" />
-                          <line x1="280" y1="240" x2="310" y2="180" />
-                          {/* Jubilee Hills blocks */}
-                          <line x1="360" y1="220" x2="300" y2="240" />
-                          <line x1="360" y1="220" x2="400" y2="180" />
-                          {/* Begumpet grid */}
-                          <line x1="500" y1="170" x2="480" y2="120" />
-                          <line x1="480" y1="120" x2="560" y2="100" />
-                        </g>
-
-                        {/* Shamshabad RGIA Airport terminal graphics */}
-                        <rect x="360" y="495" width="80" height="45" rx="6" fill="#131722" stroke="#1e293b" strokeWidth="1.5" />
-                        <line x1="370" y1="505" x2="430" y2="505" stroke="#facc15" strokeWidth="2" strokeDasharray="6,3" />
-                        <line x1="370" y1="525" x2="430" y2="525" stroke="#facc15" strokeWidth="2" strokeDasharray="6,3" />
-                        <text x="400" y="517" fill="#475569" className="font-mono text-[7px]" textAnchor="middle">RGIA RUNWAY</text>
-
-                        {/* Urban Blocks details (building clusters representation) */}
-                        <g fill="#182030" opacity="0.35">
-                          <rect x="230" y="290" width="12" height="8" />
-                          <rect x="250" y="285" width="8" height="12" />
-                          <rect x="210" y="300" width="15" height="6" />
-                          <rect x="130" y="310" width="10" height="10" />
-                          <rect x="110" y="330" width="8" height="8" />
-                          <rect x="330" y="200" width="12" height="12" />
-                          <rect x="350" y="190" width="16" height="8" />
-                        </g>
-
-                        {/* POI Markers (metro icons or route shields) */}
-                        {/* NH65 Route Shields */}
-                        <g transform="translate(180, 110)">
-                          <rect x="-12" y="-6" width="24" height="12" rx="2" fill="#1e3a8a" stroke="#ffffff" strokeWidth="0.5" />
-                          <text x="0" y="3" fill="#ffffff" className="font-mono font-bold text-[7px]" textAnchor="middle">NH65</text>
-                        </g>
-                        <g transform="translate(480, 185)">
-                          <rect x="-12" y="-6" width="24" height="12" rx="2" fill="#1e3a8a" stroke="#ffffff" strokeWidth="0.5" />
-                          <text x="0" y="3" fill="#ffffff" className="font-mono font-bold text-[7px]" textAnchor="middle">NH65</text>
-                        </g>
-
-                        {/* Road name labels */}
-                        <text x="408" y="320" fill="#475569" className="font-mono text-[7px] tracking-wider select-none rotate-90" textAnchor="middle">PVNR EXPRESSWAY</text>
-
-                        {/* District Labels */}
-                        <text x="220" y="265" fill="#64748b" className="font-mono font-black text-[9px] select-none tracking-wider opacity-75">HITEC CITY</text>
-                        <text x="160" y="360" fill="#64748b" className="font-mono font-black text-[9px] select-none tracking-wider opacity-75">GACHIBOWLI</text>
-                        <text x="280" y="225" fill="#64748b" className="font-mono font-black text-[9px] select-none tracking-wider opacity-75">MADHAPUR</text>
-                        <text x="360" y="205" fill="#64748b" className="font-mono font-black text-[9px] select-none tracking-wider opacity-75">JUBILEE HILLS</text>
-                        <text x="410" y="285" fill="#64748b" className="font-mono font-black text-[9px] select-none tracking-wider opacity-75">BANJARA HILLS</text>
-                        <text x="620" y="125" fill="#64748b" className="font-mono font-black text-[9px] select-none tracking-wider opacity-75">SECUNDERABAD</text>
-                        <text x="500" y="155" fill="#64748b" className="font-mono font-black text-[9px] select-none tracking-wider opacity-75">BEGUMPET</text>
-                        <text x="150" y="75" fill="#64748b" className="font-mono font-black text-[9px] select-none tracking-wider opacity-75">KUKATPALLY</text>
-                        <text x="80" y="295" fill="#64748b" className="font-mono font-black text-[9px] select-none tracking-wider opacity-75">FINANCIAL DISTRICT</text>
-                        <text x="400" y="555" fill="#64748b" className="font-mono font-black text-[9px] select-none tracking-wider opacity-75" textAnchor="middle">SHAMSHABAD AIRPORT</text>
-
-                        {/* Dynamic vehicle route trails and markers */}
-                        {vehicles.map(v => {
-                          const pos = vehicleMapPositions[v.vehicleId] || { x: 0, y: 0 };
-                          const heading = getHeading(v.vehicleId);
-                          const traveledPath = getTraveledPath(v.vehicleId);
-                          const remainingPath = getRemainingPath(v.vehicleId);
-                          
-                          return (
-                            <g 
-                              key={v.vehicleId} 
-                              className="cursor-pointer" 
-                              onClick={() => setSelectedTwinId(v.vehicleId)}
-                              onMouseEnter={() => setHoveredVehicleId(v.vehicleId)}
-                              onMouseLeave={() => setHoveredVehicleId(null)}
-                            >
-                              
-                              {/* Traveled route (Glows cyan/red based on lock) */}
-                              {traveledPath && (
-                                <path 
-                                  d={traveledPath}
-                                  stroke={v.immobilized ? "url(#redMapGlow)" : "url(#cyanMapGlow)"}
-                                  strokeWidth="3.5"
-                                  strokeLinecap="round"
-                                  fill="none"
-                                />
-                              )}
-
-                              {/* Ahead path remaining (Thin dashed gray) */}
-                              {remainingPath && (
-                                <path 
-                                  d={remainingPath}
-                                  stroke="#1e293b"
-                                  strokeWidth="1.5"
-                                  strokeLinecap="round"
-                                  strokeDasharray="4,4"
-                                  fill="none"
-                                />
-                              )}
-
-                              {/* Target Marker HUD elements */}
-                              {/* Orange warning banner above marker for HELD */}
-                              {v.vehicleId === selectedTwinId && v.pendingCommand && (
-                                <g transform={`translate(${pos.x - 20}, ${pos.y - 25})`} className="animate-bounce">
-                                  <rect x="0" y="0" width="40" height="14" rx="4" fill="#f59e0b" stroke="#ffffff" strokeWidth="0.5" />
-                                  <text x="20" y="10" fill="#020617" className="font-mono font-bold text-[8px] tracking-wide" textAnchor="middle">HELD</text>
-                                </g>
-                              )}
-
-                              {/* RED warning lock icon if Immobilized */}
-                              {v.vehicleId === selectedTwinId && v.immobilized && (
-                                <g transform={`translate(${pos.x - 10}, ${pos.y - 25})`} className="animate-pulse">
-                                  <circle cx="10" cy="10" r="10" fill="#f43f5e" />
-                                  <text x="10" y="13" fill="#ffffff" className="font-mono font-bold text-[8px]" textAnchor="middle">🔒</text>
-                                </g>
-                              )}
-
-                              {/* Animate green successful packet verification */}
-                              {attackEffect?.type === "success" && attackEffect.targetVehicleId === v.vehicleId && (
-                                <motion.circle
-                                  cx={pos.x}
-                                  cy={pos.y}
-                                  r="4"
-                                  fill="#10b981"
-                                  initial={{ cy: pos.y - 45, opacity: 1 }}
-                                  animate={{ cy: pos.y, opacity: [1, 1, 0] }}
-                                  transition={{ repeat: Infinity, duration: 1.2, ease: "easeOut" }}
-                                />
-                              )}
-
-                              {/* Animate orange pulse BLE attack */}
-                              {attackEffect?.type === "ble" && attackEffect.targetVehicleId === v.vehicleId && (
-                                <circle cx={pos.x} cy={pos.y} r="20" fill="none" stroke="#f97316" strokeWidth="2.5" className="animate-ping" style={{ transformOrigin: `${pos.x}px ${pos.y}px`, animationDuration: '1.2s' }} />
-                              )}
-
-                              {/* Animate red rejected replay attack overlay */}
-                              {attackEffect?.type === "replay" && attackEffect.targetVehicleId === v.vehicleId && (
-                                <g transform={`translate(${pos.x}, ${pos.y - 20})`} className="animate-pulse">
-                                  <circle cx="0" cy="0" r="9" fill="#f43f5e" />
-                                  <text x="0" y="3" fill="#ffffff" className="font-mono font-bold text-[8px]" textAnchor="middle">⚔️</text>
-                                </g>
-                              )}
-
-                              {/* Animate bad packet MITM attack */}
-                              {attackEffect?.type === "tamper" && attackEffect.targetVehicleId === v.vehicleId && (
-                                <motion.g initial={{ opacity: 1 }} animate={{ opacity: [1, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
-                                  <line x1={pos.x} y1={pos.y - 30} x2={pos.x} y2={pos.y} stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,3" />
-                                  <text x={pos.x} y={pos.y - 35} fill="#ef4444" className="font-mono text-[7px]" textAnchor="middle">BAD PACKET</text>
-                                </motion.g>
-                              )}
-
-                              {/* Heading Car Silhouette Marker */}
-                              <g transform={`translate(${pos.x}, ${pos.y}) rotate(${heading})`}>
-                                {/* Pulse when online */}
-                                {v.isMoving && !v.immobilized && (
-                                  <circle cx="0" cy="0" r="10" fill="none" stroke={v.vehicleId === selectedTwinId ? "#22d3ee" : "#10b981"} strokeWidth="1.5" className="animate-ping" />
-                                )}
-                                <rect 
-                                  x="-7" y="-4.5" 
-                                  width="14" height="9" 
-                                  rx="2" 
-                                  fill={v.immobilized ? "#f43f5e" : (v.vehicleId === selectedTwinId ? "#22d3ee" : "#10b981")} 
-                                  stroke="#ffffff" 
-                                  strokeWidth="1.2" 
-                                  className="shadow-xl" 
-                                />
-                                <rect x="1" y="-3.5" width="3" height="7" fill="#020617" /> {/* Front windshield */}
-                                <rect x="-4" y="-3.5" width="2" height="7" fill="#020617" /> {/* Rear window */}
-                              </g>
-
-                            </g>
-                          );
+                    {/* Interactive Leaflet Map */}
+                    <div className="flex-1 relative" style={{ minHeight: 480 }}>
+                      <LeafletMap
+                        vehicles={vehicles.map(v => ({
+                          vehicleId: v.vehicleId,
+                          lat: vehicleMapPositions[v.vehicleId]?.lat ?? 17.4501,
+                          lng: vehicleMapPositions[v.vehicleId]?.lng ?? 78.3751,
+                          isMoving: v.isMoving,
+                          immobilized: v.immobilized,
+                          driverName: v.driverName,
+                          speed: interpolatedSpeeds[v.vehicleId] ?? 0,
+                          battery: batteryLevels[v.vehicleId] ?? 0,
+                          signal: signalStrengths[v.vehicleId] ?? 0,
+                          pendingCommand: v.pendingCommand !== null,
+                        } as MapVehicle))}
+                        routes={vehicles.map(v => {
+                          const densePath = v.vehicleId === "TR-102" ? TR102_DENSE_PATH : v.vehicleId === "TR-103" ? TR103_DENSE_PATH : TR101_DENSE_PATH;
+                          const traveled = traveledHistory[v.vehicleId] || [densePath[0]];
+                          return {
+                            vehicleId: v.vehicleId,
+                            traveledPositions: traveled,
+                            fullLoopPositions: densePath,
+                            color: v.immobilized ? "#f43f5e" : "#06b6d4",
+                          } as MapRoute;
                         })}
-                      </svg>
+                        selectedVehicleId={selectedTwinId}
+                        onSelectVehicle={setSelectedTwinId}
+                        isThreatActive={isThreatActive}
+                      />
                     </div>
+
+
+
 
                     {/* Floating HUD Overlays (Bottom Left Event Feed Console) */}
                     <div className="absolute bottom-14 left-4 z-20">
@@ -2711,31 +2402,7 @@ export default function Dashboard() {
                       </div>
                     </div>
 
-                    {/* Zoom & Compass Overlay (Bottom Right) */}
-                    <div className="absolute bottom-16 right-4 z-20 flex flex-col gap-1.5 font-mono text-[10px]">
-                      <div className="flex bg-slate-950/80 border border-white/10 rounded-lg overflow-hidden shadow-lg">
-                        <button 
-                          onClick={() => setZoomLevel(prev => Math.min(3, prev + 0.2))} 
-                          className="px-2.5 py-1.5 hover:bg-white/10 text-cyan-400 font-bold border-r border-white/10 transition-colors"
-                          title="Zoom In"
-                          aria-label="Zoom In Map"
-                        >
-                          +
-                        </button>
-                        <button 
-                          onClick={() => setZoomLevel(prev => Math.max(1, prev - 0.2))} 
-                          className="px-2.5 py-1.5 hover:bg-white/10 text-cyan-400 font-bold transition-colors"
-                          title="Zoom Out"
-                          aria-label="Zoom Out Map"
-                        >
-                          -
-                        </button>
-                      </div>
-                      <div className="bg-slate-950/80 border border-white/10 rounded-lg p-1.5 flex items-center justify-center shadow-lg w-[45px] h-[45px] relative">
-                        <Compass className="h-6 w-6 text-cyan-400 animate-pulse" />
-                        <span className="absolute text-[6px] top-1 text-muted-foreground font-extrabold">N</span>
-                      </div>
-                    </div>
+                    {/* ponytail: custom zoom removed — Leaflet has native zoom/pan controls */}
 
                     {/* Map Legend Overlay (Bottom Right, next to zoom) */}
                     <div className="absolute bottom-16 right-20 z-20 hidden md:block">
