@@ -28,11 +28,17 @@ app.get("/", (req, res) => {
     message: "TrustRide Cryptographic Remote Immobilization API Backend Active",
     version: "1.2.0",
     endpoints: [
+      "/api/health",
       "/api/vehicles",
       "/api/audit-log",
       "/api/commands"
     ]
   });
+});
+
+// Explicit Health Check Endpoint (for monitoring / uptime pingers)
+app.get("/api/health", (req, res) => {
+  res.json({ status: "healthy", timestamp: new Date().toISOString() });
 });
 
 // ============================================================================
