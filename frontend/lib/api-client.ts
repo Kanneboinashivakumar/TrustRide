@@ -7,6 +7,8 @@ import type {
   Command,
   VerificationResult,
   AuditLogResponse,
+  PendingMultiSigEntry,
+  MultiSigPolicy,
 } from "./types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/api";
@@ -104,5 +106,42 @@ export const api = {
   resetDemoState: () =>
     request<{ message: string }>("/vehicles/reset-demo", {
       method: "POST",
+    }),
+  
+  // Multi-Signature Governance
+  getMultiSigPolicy: () =>
+    request<MultiSigPolicy>("/commands/multisig/policy"),
+  
+  toggleMultiSigPolicy: (enabled: boolean) =>
+    request<{ message: string; policy: MultiSigPolicy }>("/commands/multisig/toggle", {
+      method: "POST",
+      body: JSON.stringify({ enabled }),
+    }),
+  
+  initiateMultiSig: (params: {
+    vehicleId: string;
+    action: CommandAction;
+    reasonCode: ReasonCode;
+    reasonText: string;
+    issuerId: string;
+  }) =>
+    request<PendingMultiSigEntry>("/commands/multisig/initiate", {
+      method: "POST",
+      body: JSON.stringify(params),
+    }),
+  
+  cosignMultiSig: (entryId: string, cosignerId: string) =>
+    request<{ command: Command; result: VerificationResult }>("/commands/multisig/cosign", {
+      method: "POST",
+      body: JSON.stringify({ entryId, cosignerId }),
+    }),
+  
+  getPendingMultiSig: () =>
+    request<PendingMultiSigEntry[]>("/commands/multisig/pending"),
+  
+  triggerPartialSigDemo: (vehicleId: string, issuerId: string) =>
+    request<{ command: Command; result: VerificationResult }>("/commands/partial-sig-demo", {
+      method: "POST",
+      body: JSON.stringify({ vehicleId, issuerId }),
     }),
 };

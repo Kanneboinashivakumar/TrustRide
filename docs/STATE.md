@@ -10,46 +10,42 @@ decision you already made.
 ---
 
 ## Last updated
-2026-07-17, Session 5 COMPLETED — Antigravity (Gemini).
+2026-07-25, Session 6 COMPLETED — Antigravity (Gemini).
 
 ## Current phase
-Testing & Verification → Project Completed & Presentation-Ready
+Testing & Verification → Feature Extension — Multi-Signature Verification Completed
 
 ## Completed
 - Express backend server (`backend/src/server.ts`) implementing command issuance, history, motion controls, audit logs, driver view, and demo endpoints.
-- Integration test suite (`backend/test/scenarios.ts`) testing all 7 key scenarios against the running API.
-- Next.js 14 frontend environment and compiler configs (`package.json`, `tsconfig.json`, `next.config.mjs`, `postcss.config.js`, `tailwind.config.ts`, `globals.css`).
-- High-fidelity unified dashboard UI (`frontend/app/page.tsx`) with tab navigation for Financier portal, Vehicle Simulator, Driver app, Audit Ledger, Architecture, Analytics, Impact & Market, and Settings.
-- Route-level redirects to consolidate all sub-routes onto the primary dashboard.
-- Redesigned cybersecurity SaaS Dark Mode landing page with shield animations, grids, and CTA options.
-- Live Security Operations Banner displaying: Vehicles Online, Threats Blocked, Pending Commands, Audit Chain Integrity, Secure Element Status, Backend Status, Last Security Scan.
-- Judge Mode toggle displaying overlay cards explaining signature verification, expiry checks, replay protection, command chain verification, and motion safety checks in real-time, synchronized with the demo.
-- Impact & Market page with problem statements, target customers, business value categories, business model, and future roadmaps.
-- Standards & Security page layout showing "Designed with reference to AIS-156, ISO 26262, UNECE R155, ISO/SAE 21434" (no certification claims).
-- Auto-Demo script player, SVG analytics charts, canvas confetti explosions, and system toasts.
-- Interactive map overlays including Zoom controls (+/-), Navigation Compass, Map Legend, and Route Sim ETA Metrics.
-- Cybersecurity SaaS terminology alignment across codebase documentation and frontend UI text.
-- Metadata dense selectors featuring inline battery percentages and cellular signal levels inside the simulator tab.
+- Integration test suite (`backend/test/scenarios.ts`) testing all 8 scenarios (including multi-sig verification and partial-signature attack rejection) against the running API.
+- Dual-key provisioning (`fin-001` + `ops-001`) in the simulated HSM (`secureElement.ts` & `server.ts`).
+- Upgraded `Command` & `VerificationResult` schemas with `signatures` array and `MULTISIG` failed check (`types.ts`).
+- Upgraded vehicle verifier `Check 1` in `verifier.ts` to require 2-of-2 distinct valid signatures under dual-key policy.
+- Backend pending co-signature buffer (`pendingMultiSigCommands`) with automatic 5-min expiry sweep in `vehicleSim.ts`.
+- Multi-signature API endpoints (`/api/commands/multisig/*` and `/api/commands/partial-sig-demo`).
+- Frontend UI with Dual-Key Governance toggle (default ON), pending co-signature buffer card with precise wording ("Financier (fin-001): Authorization Recorded ✓", "Ops Admin (ops-001): Awaiting Co-Authorization…"), and 5th Threat Sandbox attack option ("5. Partial Signature Attack (1 of 2 Keys)").
 
 ## In progress
-- None (All presentation-ready enhancements are fully implemented and verified).
+- None (Multi-Signature Verification feature fully implemented and verified).
 
 ## Not started
 - None.
 
 ## Decisions made this session
-- **Design References**: Changed standard references from "compliant" to "designed with reference to" (AIS-156, ISO 26262, UNECE R155, ISO/SAE 21434) to keep presentation claims safe and accurate.
-- **Removed Hardcoded Statistics**: Substituted generalized market opportunities, target customer sectors (NBFCs, OEMs, fleets, insurance), and business value points instead of specific unverified ROI numbers.
-- **Judge Mode Overlay Sync**: Mounted conditional rendering to map the active Auto-Demo index to specific ECU verification step callouts.
+- **Multi-Sig Architecture**: Multi-signature extends Check 1 only — it does not reorder or replace Checks 2–5. The fixed verification order (signature → expiry → replay → chain → motion) is preserved.
+- **Pending Co-Signature Buffer**: Partially-signed commands are stored on the backend (`pendingMultiSigCommands` Map), not in frontend state, to support cross-role/cross-tab co-signing workflows.
+- **Expiry Policy**: Partial commands use the same canonical 5-min `expiresAt` window. Unsigned partial commands are purged by the existing background expiry sweep and logged as `[MULTISIG] Co-authorization window lapsed`.
+- **Default Mode**: Dual-Key Governance Mode is ON by default at app load, so judges see multi-sig behavior immediately. Toggle to Single-Key Mode remains available for sandbox attack demos.
+- **Atomic Signing**: Both ECDSA signatures are computed atomically at co-sign dispatch time over a canonical payload containing the fresh `priorCommandHash`.
 
 ## Known issues / bugs
-- None. Scenario integration tests are 100% green and Next.js production build check builds without warnings.
+- None. Scenario integration tests are 100% green (8/8 scenarios passing).
 
 ## Things explicitly deferred
 - None.
 
 ## Next concrete step
-- Open `http://localhost:3000` to demo the completed presentation-ready platform to investors or judges, activating "Judge Mode" to highlight the on-board cryptographic steps.
+- Open `http://localhost:3000` to demo the platform with Dual-Key Governance active.
 
 ---
 

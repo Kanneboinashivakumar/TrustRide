@@ -34,6 +34,13 @@ async function runTests() {
   console.log("[Test] Resetting demo state...");
   await request("/vehicles/reset-demo", { method: "POST" });
 
+  // Disable multi-sig for Scenarios 1-7 (they test single-key behavior)
+  await request("/commands/multisig/toggle", {
+    method: "POST",
+    body: JSON.stringify({ enabled: false }),
+  });
+  console.log("[Test] Multi-sig policy disabled for Scenarios 1-7.\n");
+
   // --------------------------------------------------------------------------
   // Scenario 1: Financier submits shutdown request on moving vehicle → HELD
   // --------------------------------------------------------------------------
@@ -209,8 +216,87 @@ async function runTests() {
   assert.strictEqual(restoredLog.chainIntact, true, "Restored chain must be intact again");
   console.log("✓ Success: Tampered log successfully broke chain, restoration fixed it.");
 
+  // --------------------------------------------------------------------------
+  // Scenario 8: Multi-Signature Verification
+  // --------------------------------------------------------------------------
+  console.log("\n[Scenario 8] Multi-Signature Verification (dual-key governance)...");
+
+  // Enable multi-sig policy for Scenario 8
+  await request("/commands/multisig/toggle", {
+    method: "POST",
+    body: JSON.stringify({ enabled: true }),
+  });
+  console.log("[Test] Multi-sig policy ENABLED.");
+
+  // 8a: Full dual-sig command (fin-001 + ops-001) → should pass
+  console.log("[Scenario 8a] Full dual-sig command (both signers)...");
+  
+  // Initiate multi-sig command
+  const msInitResponse = await request("/commands/multisig/initiate", {
+    method: "POST",
+    body: JSON.stringify({
+      vehicleId: "TR-101",
+      action: "IMMOBILIZE",
+      reasonCode: "loan_default",
+      reasonText: "Dual-key governance test: full authorization",
+      issuerId: "fin-001",
+    }),
+  });
+  assert.ok(msInitResponse.entryId, "Initiation should return an entryId");
+  console.log(`  Initiated multi-sig entry: ${msInitResponse.entryId.slice(0, 8)}…`);
+
+  // Co-sign and dispatch
+  const msCosignResponse = await request("/commands/multisig/cosign", {
+    method: "POST",
+    body: JSON.stringify({
+      entryId: msInitResponse.entryId,
+      cosignerId: "ops-001",
+    }),
+  });
+  assert.ok(msCosignResponse.command, "Co-sign should return a command");
+  assert.ok(msCosignResponse.result, "Co-sign should return a verification result");
+  assert.strictEqual(msCosignResponse.result.outcome, "EXECUTED", "Dual-sig command on stationary vehicle should EXECUTE");
+  assert.strictEqual(msCosignResponse.result.failedCheck, null, "No checks should fail on valid dual-sig");
+  assert.ok(msCosignResponse.command.signatures, "Command should have signatures array");
+  assert.strictEqual(msCosignResponse.command.signatures.length, 2, "Command should have exactly 2 signatures");
+  console.log("✓ Success: Full dual-sig command executed on stationary vehicle.");
+
+  // Cancel the immobilization for cleanup
+  await request("/commands/multisig/toggle", {
+    method: "POST",
+    body: JSON.stringify({ enabled: false }),
+  });
+  await request("/commands", {
+    method: "POST",
+    body: JSON.stringify({
+      vehicleId: "TR-101",
+      action: "CANCEL",
+      reasonCode: "maintenance",
+      reasonText: "Cleanup after multi-sig test",
+      issuerId: "fin-001",
+    }),
+  });
+  await request("/commands/multisig/toggle", {
+    method: "POST",
+    body: JSON.stringify({ enabled: true }),
+  });
+
+  // 8b: Partial-sig attack (1 of 2 keys, policy ON) → must be REJECTED
+  console.log("\n[Scenario 8b] Partial signature attack (1 of 2 required keys)...");
+  
+  const partialSigResponse = await request("/commands/partial-sig-demo", {
+    method: "POST",
+    body: JSON.stringify({
+      vehicleId: "TR-101",
+      issuerId: "fin-001",
+    }),
+  });
+  assert.strictEqual(partialSigResponse.result.outcome, "REJECTED", "Partial-sig command must be REJECTED");
+  assert.strictEqual(partialSigResponse.result.failedCheck, "MULTISIG", "Rejection cause must be MULTISIG");
+  console.log("✓ Success: Partial signature (1 of 2) correctly rejected by ECU.");
+
   console.log("\n========================================================");
-  console.log("ALL 7 SCENARIOS PASSED API-LEVEL VERIFICATION");
+  console.log("ALL 8 SCENARIOS PASSED API-LEVEL VERIFICATION");
   console.log("========================================================\n");
   
   process.exit(0);

@@ -13,12 +13,26 @@ export interface Command {
   action: CommandAction;
   reasonCode: ReasonCode;
   reasonText: string;
-  issuerId: string;         // financier account id
+  issuerId: string;         // financier account id (primary initiator)
   issuedAt: string;         // ISO timestamp
   expiresAt: string;        // issuedAt + short window (default 5 min)
   nonce: string;            // random, prevents replay
   priorCommandHash: string; // chains to last executed command for this vehicle ("GENESIS" if none)
-  signature: string;        // ECDSA signature over all fields above
+  signature: string;        // ECDSA signature over all fields above (single-key mode)
+  signatures?: Array<{ issuerId: string; signature: string }>; // multi-sig mode: all co-signers
+}
+
+/** Entry in the pending multi-sig buffer (backend-only, awaiting co-authorization). */
+export interface PendingMultiSigEntry {
+  entryId: string;          // UUID for this pending entry
+  vehicleId: string;
+  action: CommandAction;
+  reasonCode: ReasonCode;
+  reasonText: string;
+  initiatorId: string;      // issuer who initiated (intent recorded, not yet signed)
+  issuedAt: string;         // ISO timestamp of initiation
+  expiresAt: string;        // same 5-min window — co-sign must happen before this
+  nonce: string;
 }
 
 export type AuditEventType =
@@ -50,12 +64,13 @@ export interface Vehicle {
 
 /** Lifecycle status of a command as tracked by the platform (for driver/financier views). */
 export type CommandStatus =
-  | "PENDING"    // dispatched, vehicle hasn't resolved it yet (transient)
-  | "HELD"       // verified but vehicle moving — waiting for it to stop
+  | "PENDING"         // dispatched, vehicle hasn't resolved it yet (transient)
+  | "HELD"            // verified but vehicle moving — waiting for it to stop
   | "EXECUTED"
   | "REJECTED"
-  | "EXPIRED"    // expired while held
-  | "CANCELLED"; // superseded by an executed CANCEL
+  | "EXPIRED"         // expired while held
+  | "CANCELLED"       // superseded by an executed CANCEL
+  | "AWAITING_COSIGN"; // multi-sig: financier authorized, awaiting ops admin co-sign
 
 export interface CommandRecord {
   command: Command;
@@ -76,6 +91,14 @@ export interface VerificationResult {
     | "REPLAY"
     | "CHAIN"
     | "PENDING_SLOT"
+    | "MULTISIG"
     | null;
   detail: string;
+}
+
+/** Multi-signature policy configuration. */
+export interface MultiSigPolicy {
+  enabled: boolean;
+  requiredSignatures: number;
+  requiredIssuers: string[];
 }

@@ -15,7 +15,7 @@
 import { canonicalizeCommand, commandHash } from "../crypto/canonical.js";
 import { secureElement, verifySignature } from "../crypto/secureElement.js";
 import { auditLog } from "../audit/auditLog.js";
-import { setStatus, upsertRecord, vehicles } from "../models/store.js";
+import { setStatus, upsertRecord, vehicles, multiSigPolicy } from "../models/store.js";
 import type { Command, VerificationResult } from "../models/types.js";
 
 const GENESIS = "GENESIS";
@@ -49,15 +49,61 @@ class VehicleVerifier {
       return this.reject(cmd, "CHAIN", `Unknown vehicle '${cmd.vehicleId}'`);
     }
 
-    // ── Check 1: SIGNATURE ────────────────────────────────────────────────
-    const issuerKey = this.trustedIssuerKeys.get(cmd.issuerId);
+    // ── Check 1: SIGNATURE (extended for multi-sig) ─────────────────────────
     const payload = canonicalizeCommand(cmd);
-    if (!issuerKey || !verifySignature(issuerKey, payload, cmd.signature)) {
-      return this.reject(
-        cmd,
-        "SIGNATURE",
-        `Signature verification FAILED for issuer '${cmd.issuerId}' — command not authentic, refused before any other check`
-      );
+
+    if (multiSigPolicy.enabled) {
+      // Multi-sig mode: require N distinct signatures from required issuers
+      const sigs = cmd.signatures;
+      if (!sigs || sigs.length < multiSigPolicy.requiredSignatures) {
+        return this.reject(
+          cmd,
+          "MULTISIG",
+          `[MULTISIG] Multi-signature check FAILED: ${multiSigPolicy.requiredSignatures} of ${multiSigPolicy.requiredSignatures} required signatures (${multiSigPolicy.requiredIssuers.join(" + ")}). Only ${sigs?.length ?? 0} signature(s) attached.`
+        );
+      }
+
+      // Verify each signature is from a distinct, trusted issuer
+      const verifiedIssuers = new Set<string>();
+      for (const sig of sigs) {
+        if (verifiedIssuers.has(sig.issuerId)) {
+          return this.reject(
+            cmd,
+            "MULTISIG",
+            `[MULTISIG] Duplicate signature from issuer '${sig.issuerId}' — each signer must be distinct`
+          );
+        }
+        const issuerKey = this.trustedIssuerKeys.get(sig.issuerId);
+        if (!issuerKey || !verifySignature(issuerKey, payload, sig.signature)) {
+          return this.reject(
+            cmd,
+            "MULTISIG",
+            `[MULTISIG] Signature verification FAILED for co-signer '${sig.issuerId}' — not authentic`
+          );
+        }
+        verifiedIssuers.add(sig.issuerId);
+      }
+
+      // Ensure all required issuers are present
+      for (const requiredId of multiSigPolicy.requiredIssuers) {
+        if (!verifiedIssuers.has(requiredId)) {
+          return this.reject(
+            cmd,
+            "MULTISIG",
+            `[MULTISIG] Required co-signer '${requiredId}' missing — command not fully authorized`
+          );
+        }
+      }
+    } else {
+      // Single-key mode: original Check 1 logic
+      const issuerKey = this.trustedIssuerKeys.get(cmd.issuerId);
+      if (!issuerKey || !verifySignature(issuerKey, payload, cmd.signature)) {
+        return this.reject(
+          cmd,
+          "SIGNATURE",
+          `Signature verification FAILED for issuer '${cmd.issuerId}' — command not authentic, refused before any other check`
+        );
+      }
     }
 
     // ── Check 2: EXPIRY ───────────────────────────────────────────────────

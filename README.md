@@ -72,13 +72,14 @@ TrustRide replaces informal, unauthenticated remote shutdown with a **decentrali
 |---|---|---|
 | 🔐 Secure Remote Immobilization | Security | Cryptographically authorized power isolation that overrides standard vehicle ignition |
 | ✍️ Asymmetric Verification | Cryptography | ECU-side signature checking using real ECDSA P-256 public keys stored in secure firmware |
+| 🔑 Dual-Key Multi-Signature | Governance | Enterprise governance requiring 2-of-2 distinct co-signatures (Financier + Operations Admin) before execution |
 | 🛡️ Replay Protection | Cryptography | Strict nonce and command UUID checks preventing reuse of intercepted authorization packets |
 | 🚦 Motion Safety Interlock | Safety | Telemetry-aware interlock that defers execution of override commands while speed > 0 |
 | 🔗 Immutable Audit Ledger | Integrity | SHA-256 hash-chained block ledger that makes any post-hoc database tampering immediately visible |
 | ⚖️ Driver Dispute Portal | Compliance | Lets drivers append dispute records with payment reference hashes directly to the audit log |
 | 🎬 Auto Demo Mode | Presentation | A guided player walking through threat simulations, interlock states, and ledger forensics |
 | 🕵️ Presenter's Judge Mode | Presentation | Live pop-up annotations detailing exactly which ECU check is running at each step |
-| ⚡ Interactive Attack Simulator | Threat Sandbox | Triggers replay, MITM, rogue-issuer, and stale-command attacks live, and shows the ECU reject each one |
+| ⚡ Interactive Attack Simulator | Threat Sandbox | Triggers replay, MITM, rogue-issuer, partial-signature, and stale-command attacks live, and shows the ECU reject each one |
 | 📊 Enterprise Analytics | Dashboard | Real-time fleet status, blocked threats, held-command queues, and ledger health |
 | 🗺️ Digital Twin Map | Telemetry | Interactive map tracking simulated vehicles, routes, and live speed telemetry |
 | 📟 Simulated HSM Module | Hardware | Software emulation of a secure element — ECDSA key slot storage, signing, and verification |
@@ -172,7 +173,7 @@ flowchart TD
 
 | # | Check | What it verifies |
 |---|---|---|
-| 1 | **Signature** | Command fields are canonicalized, hashed, and verified against the issuer's public key in the ECU trust store |
+| 1 | **Signature & Multi-Sig Policy** | Canonicalized payload verified against trusted ECDSA keys. Under Dual-Key Governance, requires 2-of-2 distinct signatures (`fin-001` + `ops-001`) |
 | 2 | **Freshness window** | Current time vs. command timestamp — anything older than 5 minutes is discarded as stale |
 | 3 | **Replay / nonce** | Unique command ID and nonce checked against everything the vehicle has already seen |
 | 4 | **Hash-chain anchoring** | Command must reference the hash of the last successfully executed command on that vehicle |
@@ -202,6 +203,7 @@ An interactive sandbox lets you trigger real exploit patterns and watch the ECU 
 | Verbatim Replay | A previously executed command resent as-is | Check 3 | **REJECTED** — nonce/command ID already consumed |
 | Stale Command Playback | A valid but hours-old signed command replayed | Check 2 | **REJECTED** — outside the 5-minute freshness window |
 | Rogue Issuer | Command signed with an unauthorized key pair | Check 1 | **REJECTED** — signing key not in the firmware trust store |
+| Partial Signature Attack | Only 1 of 2 required signatures attached (policy active) | Check 1 | **REJECTED** — fails 2-of-2 multi-sig requirement (`MULTISIG`) |
 | Backend Compromise | Attacker controls the API server, tries bulk shutdown | Check 1 | **REJECTED** — the backend never held signing keys |
 | Ledger Tampering | Direct database edit to erase or alter a logged event | Hash-chain | **FLAGGED** — chain breaks at the exact tampered index |
 
@@ -253,7 +255,7 @@ cd ../frontend && npm install
 
 ### Run the scenario test suite
 
-Confirms all 7 core security scenarios pass before you touch the UI:
+Confirms all 8 core security scenarios pass (including Dual-Key Governance & Partial Signature Attack rejection) before touching the UI:
 
 ```bash
 cd backend

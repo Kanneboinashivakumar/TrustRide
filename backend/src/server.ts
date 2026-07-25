@@ -8,9 +8,12 @@ import {
   dispatchTamperedCommand,
   dispatchExpiredCommand,
   replayLastCommand,
+  initiateMultiSig,
+  cosignAndDispatch,
+  dispatchPartialSigCommand,
 } from "./engine/commandService.js";
 import { auditLog } from "./audit/auditLog.js";
-import { commandRecords, vehicles, recordsForVehicle } from "./models/store.js";
+import { commandRecords, vehicles, recordsForVehicle, pendingMultiSigCommands, multiSigPolicy } from "./models/store.js";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -41,15 +44,21 @@ console.log("[TrustRide] Initializing Simulated Secure Element & Keys...");
 // 1. Provision Financier (TrustRide Finance)
 secureElement.provision("fin-001", "TrustRide Finance");
 
+// 1b. Provision Operations Admin (TrustRide Ops)
+secureElement.provision("ops-001", "TrustRide Operations Admin");
+
 // 2. Provision Vehicles TR-101, TR-102, TR-103
 secureElement.provision("vehicle:TR-101", "Vehicle TR-101 (Rajesh Kumar)");
 secureElement.provision("vehicle:TR-102", "Vehicle TR-102 (Priya Sharma)");
 secureElement.provision("vehicle:TR-103", "Vehicle TR-103 (Amit Singh)");
 
 // 3. Configure trust store on the Vehicle Verifier
-// The vehicle verifier (representing vehicle firmware) must trust the financier's public key
+// The vehicle verifier (representing vehicle firmware) must trust both issuers' public keys
 const financierPubKey = secureElement.getPublicKeyPem("fin-001");
 vehicleVerifier.trustIssuer("fin-001", financierPubKey);
+
+const opsPubKey = secureElement.getPublicKeyPem("ops-001");
+vehicleVerifier.trustIssuer("ops-001", opsPubKey);
 
 // 4. Register vehicles in the simulation store
 registerVehicle("TR-101", "Rajesh Kumar");
@@ -57,6 +66,8 @@ registerVehicle("TR-102", "Priya Sharma");
 registerVehicle("TR-103", "Amit Singh");
 
 // 5. Seed some initial command history (for demo visibility)
+// Temporarily disable multi-sig for seed commands (they use single-key flow)
+multiSigPolicy.enabled = false;
 try {
   // Let's create an initial request that executed successfully
   issueAndDispatch({
@@ -92,6 +103,9 @@ try {
 } catch (err) {
   console.error("[TrustRide] Error seeding initial commands:", err);
 }
+
+// Re-enable multi-sig policy after seeding (default ON for judges)
+multiSigPolicy.enabled = true;
 
 // Start the background sweep to expire held commands
 startExpirySweep(1000);
@@ -273,17 +287,23 @@ app.post("/api/commands/replay-demo", (req, res) => {
 // 12. Reset all vehicle states (for clean replay of demo)
 app.post("/api/vehicles/reset-demo", (req, res) => {
   try {
-    // Clear all command records and audit log
+    // Clear all command records, pending multi-sig entries, and audit log
     commandRecords.clear();
+    pendingMultiSigCommands.clear();
     
-    // We have to clear audit log entries. Since auditLog doesn't expose a clear method,
-    // we can use a dirty trick or just let the server restart if they want a full clean,
-    // or let's reset vehicles manually and append a RESET event.
+    // Reset multi-sig policy to default ON
+    multiSigPolicy.enabled = true;
+    multiSigPolicy.requiredSignatures = 2;
+    multiSigPolicy.requiredIssuers = ["fin-001", "ops-001"];
+    
     for (const v of vehicles.values()) {
       v.immobilized = false;
       v.isMoving = false;
       v.pendingCommand = null;
     }
+    
+    // Temporarily disable multi-sig for seed commands (they use single-key flow)
+    multiSigPolicy.enabled = false;
     
     // Let's reset TR-103 back to moving for demo
     setMotion("TR-103", true);
@@ -313,6 +333,9 @@ app.post("/api/vehicles/reset-demo", (req, res) => {
       issuerId: "fin-001",
     });
     
+    // Re-enable multi-sig policy after seeding
+    multiSigPolicy.enabled = true;
+    
     auditLog.append("SYSTEM", "ACKNOWLEDGED", "Demo state reset triggered by admin/simulator.");
 
     res.json({ message: "Demo state reset successfully" });
@@ -324,6 +347,63 @@ app.post("/api/vehicles/reset-demo", (req, res) => {
 // 13. Get all vehicles
 app.get("/api/vehicles", (req, res) => {
   res.json([...vehicles.values()]);
+});
+
+// ============================================================================
+// MULTI-SIGNATURE GOVERNANCE ROUTES
+// ============================================================================
+
+// 14. Get multi-sig policy state
+app.get("/api/commands/multisig/policy", (req, res) => {
+  res.json(multiSigPolicy);
+});
+
+// 15. Toggle multi-sig policy on/off
+app.post("/api/commands/multisig/toggle", (req, res) => {
+  const { enabled } = req.body;
+  if (typeof enabled !== "boolean") {
+    return res.status(400).json({ error: "'enabled' (boolean) is required" });
+  }
+  multiSigPolicy.enabled = enabled;
+  res.json({ message: `Multi-sig policy ${enabled ? "ENABLED" : "DISABLED"}`, policy: multiSigPolicy });
+});
+
+// 16. Initiate a multi-sig command (financier records intent)
+app.post("/api/commands/multisig/initiate", (req, res) => {
+  try {
+    const { vehicleId, action, reasonCode, reasonText, issuerId } = req.body;
+    const entry = initiateMultiSig({ vehicleId, action, reasonCode, reasonText, issuerId });
+    res.json(entry);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// 17. Co-sign and dispatch a pending multi-sig command (ops admin authorizes)
+app.post("/api/commands/multisig/cosign", (req, res) => {
+  try {
+    const { entryId, cosignerId } = req.body;
+    const result = cosignAndDispatch(entryId, cosignerId);
+    res.json(result);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// 18. List pending multi-sig commands awaiting co-authorization
+app.get("/api/commands/multisig/pending", (req, res) => {
+  res.json([...pendingMultiSigCommands.values()]);
+});
+
+// 19. Partial-signature attack demo (1 of 2 keys, policy stays ON)
+app.post("/api/commands/partial-sig-demo", (req, res) => {
+  try {
+    const { vehicleId, issuerId } = req.body;
+    const result = dispatchPartialSigCommand(vehicleId, issuerId);
+    res.json(result);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
 app.listen(PORT, () => {

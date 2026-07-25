@@ -48,7 +48,9 @@ import type {
   CommandRecord, 
   CommandAction, 
   ReasonCode,
-  AuditLogResponse
+  AuditLogResponse,
+  PendingMultiSigEntry,
+  MultiSigPolicy
 } from "../lib/types";
 
 type Tab = "overview" | "financier" | "simulator" | "driver" | "audit" | "architecture" | "analytics" | "market" | "settings";
@@ -241,6 +243,10 @@ export default function Dashboard() {
     failedCheck?: string | null;
   } | null>(null);
 
+  // Multi-Signature Governance State
+  const [multiSigEnabled, setMultiSigEnabled] = useState<boolean>(true);
+  const [pendingMultiSigEntries, setPendingMultiSigEntries] = useState<PendingMultiSigEntry[]>([]);
+
   // Driver Tab State
   const [driverVehicleId, setDriverVehicleId] = useState<string>("TR-101");
   const [driverViewData, setDriverViewData] = useState<{ vehicle: Vehicle; history: CommandRecord[] } | null>(null);
@@ -278,6 +284,12 @@ export default function Dashboard() {
         
         const log = await api.getAuditLog();
         if (active) setAuditLog(log);
+
+        const pending = await api.getPendingMultiSig();
+        if (active) setPendingMultiSigEntries(pending);
+
+        const policy = await api.getMultiSigPolicy();
+        if (active) setMultiSigEnabled(policy.enabled);
         
         if (active) {
           setIsLoading(false);
@@ -800,6 +812,39 @@ export default function Dashboard() {
     addAlert("Auto Demo stopped by operator", "info");
   };
 
+  // Toggle Multi-Sig Governance Policy Mode
+  const handleToggleMultiSig = async (enabled: boolean) => {
+    try {
+      const res = await api.toggleMultiSigPolicy(enabled);
+      setMultiSigEnabled(res.policy.enabled);
+      addAlert(`[MULTISIG POLICY] Dual-Key Governance mode ${res.policy.enabled ? "ENABLED (2-Key Required)" : "DISABLED (Single Key)"}`, "info");
+    } catch (err: any) {
+      addAlert(`Failed to toggle multi-sig policy: ${err.message}`, "danger");
+    }
+  };
+
+  // Co-Sign pending multi-sig command as Ops Admin (ops-001)
+  const handleCosignSubmit = async (entryId: string) => {
+    setFinancierSubmitting(true);
+    setLastActionOutcome(null);
+    try {
+      const res = await api.cosignMultiSig(entryId, "ops-001");
+      const { outcome, failedCheck, detail } = res.result;
+      const success = outcome !== "REJECTED";
+      
+      setLastActionOutcome({ outcome, detail, success, failedCheck });
+      addAlert(`[MULTISIG] Dual-key command co-signed & dispatched. Result: ${outcome}`, success ? (outcome === "HELD" ? "warning" : "success") : "danger");
+      
+      const pending = await api.getPendingMultiSig();
+      setPendingMultiSigEntries(pending);
+    } catch (err: any) {
+      setLastActionOutcome({ outcome: "ERROR", detail: err.message, success: false });
+      addAlert(`Co-signing failed: ${err.message}`, "danger");
+    } finally {
+      setFinancierSubmitting(false);
+    }
+  };
+
   // Submit Command Handler (Financier tab - manual)
   const handleManualCommandSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -807,19 +852,41 @@ export default function Dashboard() {
     setLastActionOutcome(null);
     
     try {
-      const res = await api.submitCommand({
-        vehicleId: selectedVehicleId,
-        action: financierAction,
-        reasonCode,
-        reasonText,
-        issuerId: "fin-001"
-      });
+      if (multiSigEnabled) {
+        // Dual-Key Governance Mode: Step 1 (Financier Initiates / Records Intent)
+        const entry = await api.initiateMultiSig({
+          vehicleId: selectedVehicleId,
+          action: financierAction,
+          reasonCode,
+          reasonText,
+          issuerId: "fin-001"
+        });
+        
+        addAlert(`[MULTISIG] Authorization recorded. Awaiting Ops Admin (ops-001) co-signature.`, "info");
+        setLastActionOutcome({
+          outcome: "AWAITING_COSIGN",
+          detail: `[MULTISIG] Financier (fin-001) authorized ${financierAction} on ${selectedVehicleId}. Command buffered pending Ops Admin (ops-001) co-signature.`,
+          success: true
+        });
+        
+        const pending = await api.getPendingMultiSig();
+        setPendingMultiSigEntries(pending);
+      } else {
+        // Single-Key Legacy Flow
+        const res = await api.submitCommand({
+          vehicleId: selectedVehicleId,
+          action: financierAction,
+          reasonCode,
+          reasonText,
+          issuerId: "fin-001"
+        });
 
-      const { outcome, failedCheck, detail } = res.result;
-      const success = outcome !== "REJECTED";
-      
-      setLastActionOutcome({ outcome, detail, success, failedCheck });
-      addAlert(`Command dispatched. Result: ${outcome}`, success ? (outcome === "HELD" ? "warning" : "success") : "danger");
+        const { outcome, failedCheck, detail } = res.result;
+        const success = outcome !== "REJECTED";
+        
+        setLastActionOutcome({ outcome, detail, success, failedCheck });
+        addAlert(`Command dispatched. Result: ${outcome}`, success ? (outcome === "HELD" ? "warning" : "success") : "danger");
+      }
       
       if (financierAction === "CANCEL") {
         setReasonText("Outstanding delinquency settled. Drive authorization restored.");
@@ -833,7 +900,7 @@ export default function Dashboard() {
   };
 
   // Handle Manual Attacks
-  const handleManualAttack = async (attackType: "tamper" | "expire" | "replay" | "unauth") => {
+  const handleManualAttack = async (attackType: "tamper" | "expire" | "replay" | "unauth" | "partial_sig") => {
     setFinancierSubmitting(true);
     setLastActionOutcome(null);
     try {
@@ -844,6 +911,8 @@ export default function Dashboard() {
         res = await api.triggerExpireDemo(selectedVehicleId, "fin-001");
       } else if (attackType === "replay") {
         res = await api.triggerReplayDemo(selectedVehicleId);
+      } else if (attackType === "partial_sig") {
+        res = await api.triggerPartialSigDemo(selectedVehicleId, "fin-001");
       } else {
         res = await api.submitCommand({
           vehicleId: selectedVehicleId,
@@ -860,7 +929,7 @@ export default function Dashboard() {
       setLastActionOutcome({ outcome, failedCheck, detail, success });
       addAlert(`[ATTACK DEMO] ${attackType.toUpperCase()} dispatched. Outcome: ${outcome}`, success ? "info" : "danger");
     } catch (err: any) {
-      setLastActionOutcome({ outcome: "REJECTED", detail: err.message, success: false, failedCheck: "SIGNATURE" });
+      setLastActionOutcome({ outcome: "REJECTED", detail: err.message, success: false, failedCheck: attackType === "partial_sig" ? "MULTISIG" : "SIGNATURE" });
       addAlert(`[ATTACK DEMO] Rejected: ${err.message}`, "danger");
     } finally {
       setFinancierSubmitting(false);
@@ -1692,10 +1761,91 @@ export default function Dashboard() {
               {activeTab === "financier" && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fadeIn font-mono">
                   <div className="lg:col-span-1 flex flex-col gap-6">
+                    {/* Policy Mode Selector Card */}
+                    <div className="bg-slate-950/40 border border-white/10 rounded-[20px] p-5 shadow-xl flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <ShieldCheck className="h-4 w-4 text-cyan-400" />
+                          <h3 className="text-xs font-extrabold uppercase tracking-wider text-cyan-400">Dual-Key Governance Policy</h3>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleMultiSig(!multiSigEnabled)}
+                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${multiSigEnabled ? "bg-cyan-500" : "bg-slate-800"}`}
+                          role="switch"
+                          aria-checked={multiSigEnabled}
+                        >
+                          <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200 ease-in-out ${multiSigEnabled ? "translate-x-4" : "translate-x-0"}`} />
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground leading-relaxed">
+                        {multiSigEnabled
+                          ? "POLICY ACTIVE: Requires 2-of-2 signatures (Financier fin-001 + Operations Admin ops-001) before ECU execution."
+                          : "POLICY INACTIVE: Single-signature mode active (backward compatibility mode)."}
+                      </p>
+                    </div>
+
+                    {/* Pending Co-Signature Buffer Card (if multi-sig entries pending) */}
+                    {pendingMultiSigEntries.length > 0 && (
+                      <div className="bg-amber-950/20 border border-amber-500/30 rounded-[20px] p-5 shadow-xl flex flex-col gap-4 cyber-glow-amber">
+                        <div className="flex items-center justify-between border-b border-amber-500/20 pb-2">
+                          <h3 className="text-xs font-extrabold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                            <Clock className="h-4 w-4 animate-pulse" />
+                            Awaiting Co-Authorization
+                          </h3>
+                          <span className="text-[9px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded font-mono">
+                            {pendingMultiSigEntries.length} Pending
+                          </span>
+                        </div>
+
+                        {pendingMultiSigEntries.map((entry) => (
+                          <div key={entry.entryId} className="flex flex-col gap-3 bg-slate-950/60 p-3.5 rounded-xl border border-white/5 text-xs">
+                            <div className="space-y-1 text-[11px]">
+                              <div><span className="text-muted-foreground font-semibold">Target:</span> <span className="font-bold text-cyan-400">{entry.vehicleId}</span></div>
+                              <div><span className="text-muted-foreground font-semibold">Action:</span> <span className="font-bold text-rose-400">{entry.action}</span></div>
+                              <div><span className="text-muted-foreground font-semibold">Reason:</span> <span className="text-foreground">{entry.reasonText}</span></div>
+                              <div className="text-[9px] text-muted-foreground">Expires: {new Date(entry.expiresAt).toLocaleTimeString()}</div>
+                            </div>
+
+                            <div className="flex flex-col gap-1.5 text-[10px] bg-slate-900/80 p-2.5 rounded-lg border border-white/5">
+                              <div className="text-emerald-400 font-semibold flex items-center gap-1.5">
+                                <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                                Financier (fin-001): Authorization Recorded ✓
+                              </div>
+                              <div className="text-amber-400 font-semibold flex items-center gap-1.5">
+                                <Clock className="h-3.5 w-3.5 animate-pulse shrink-0" />
+                                Ops Admin (ops-001): Awaiting Co-Authorization…
+                              </div>
+                            </div>
+
+                            <motion.button
+                              whileHover={{ scale: 1.01 }}
+                              whileTap={{ scale: 0.99 }}
+                              onClick={() => handleCosignSubmit(entry.entryId)}
+                              disabled={financierSubmitting}
+                              className="w-full py-2.5 bg-cyan-650 hover:bg-cyan-600 text-white font-bold rounded-lg text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2 shadow-md shadow-cyan-950/20"
+                            >
+                              {financierSubmitting ? (
+                                <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <>
+                                  <ShieldCheck className="h-3.5 w-3.5" />
+                                  Co-Sign as Ops Admin (ops-001) & Dispatch
+                                </>
+                              )}
+                            </motion.button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Command Submission Form */}
                     <div className="bg-slate-950/40 border border-white/5 rounded-[20px] p-5 shadow-xl flex flex-col gap-4">
                       <div className="border-b border-white/5 pb-2">
                         <h3 className="text-sm font-extrabold uppercase tracking-wider text-cyan-400">Issue Gov Action</h3>
-                        <p className="text-[10px] text-muted-foreground">Signs command with Simulated HSM private key</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {multiSigEnabled ? "Step 1: Record Financier intent (2-Key Policy Active)" : "Signs command with Single Financier key"}
+                        </p>
                       </div>
 
                       <form onSubmit={handleManualCommandSubmit} className="flex flex-col gap-4 text-xs">
@@ -1779,7 +1929,7 @@ export default function Dashboard() {
                           ) : (
                             <>
                               {financierAction === "IMMOBILIZE" ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
-                              Sign & Dispatch
+                              {multiSigEnabled ? "Authorize (Financier Step 1)" : "Sign & Dispatch"}
                             </>
                           )}
                         </motion.button>
@@ -1851,6 +2001,20 @@ export default function Dashboard() {
                             <div className="text-[9px] text-muted-foreground mt-0.5 font-sans">Signed by key not in vehicle trust store.</div>
                           </div>
                           <User className="h-4.5 w-4.5 text-purple-400 shrink-0" />
+                        </motion.button>
+
+                        <motion.button
+                          whileHover={{ scale: 1.01 }}
+                          whileTap={{ scale: 0.99 }}
+                          onClick={() => handleManualAttack("partial_sig")}
+                          disabled={financierSubmitting}
+                          className="flex items-center justify-between p-3 bg-slate-900 border border-cyan-500/30 rounded-xl hover:bg-white/5 transition-all text-left bg-cyan-950/10"
+                        >
+                          <div>
+                            <div className="text-cyan-400 font-bold">5. Partial Signature Attack (1 of 2 Keys)</div>
+                            <div className="text-[9px] text-muted-foreground mt-0.5 font-sans">Only 1 of 2 required signatures attached (policy active).</div>
+                          </div>
+                          <ShieldAlert className="h-4.5 w-4.5 text-cyan-400 shrink-0" />
                         </motion.button>
                       </div>
                     </div>

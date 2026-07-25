@@ -5,7 +5,9 @@
  * whose window lapsed while the vehicle kept moving.
  */
 import { vehicles } from "../models/store.js";
+import { pendingMultiSigCommands } from "../models/store.js";
 import { vehicleVerifier } from "../engine/verifier.js";
+import { auditLog } from "../audit/auditLog.js";
 import type { Vehicle, VerificationResult } from "../models/types.js";
 
 export function registerVehicle(vehicleId: string, driverName: string): Vehicle {
@@ -45,12 +47,25 @@ export function setMotion(
   return { vehicle, recheck };
 }
 
-/** Background sweep: expire held commands whose window lapsed while moving. */
+/** Background sweep: expire held commands whose window lapsed while moving,
+ *  and purge stale pending multi-sig entries whose co-sign window lapsed. */
 export function startExpirySweep(intervalMs = 1000): NodeJS.Timeout {
   const timer = setInterval(() => {
+    // Expire held single commands on vehicles
     for (const v of vehicles.values()) {
       if (v.pendingCommand && new Date(v.pendingCommand.expiresAt).getTime() <= Date.now()) {
         vehicleVerifier.recheckPending(v.vehicleId); // logs REJECTED/EXPIRED itself
+      }
+    }
+    // Purge expired pending multi-sig entries
+    for (const [entryId, entry] of pendingMultiSigCommands) {
+      if (new Date(entry.expiresAt).getTime() <= Date.now()) {
+        pendingMultiSigCommands.delete(entryId);
+        auditLog.append(
+          entryId,
+          "REJECTED",
+          `[MULTISIG] Co-authorization window lapsed (5 min window expired) — partial 1-of-2 command for ${entry.vehicleId} discarded by sweep`
+        );
       }
     }
   }, intervalMs);
