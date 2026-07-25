@@ -1,23 +1,49 @@
-<svg viewBox="0 0 450 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 500 280" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stopColor="#22d3ee" />
-      <stop offset="100%" stopColor="#3b82f6" />
+    <!-- Primary metallic cyan-to-blue gradient -->
+    <linearGradient id="trGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="50%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#1d4ed8" />
     </linearGradient>
-    <style>
-      .title { font-family: 'Inter', system-ui, -apple-system, sans-serif; font-weight: 900; font-size: 32px; fill: #ffffff; letter-spacing: 2px; text-transform: uppercase; }
-      .subtitle { font-family: 'Inter', system-ui, -apple-system, sans-serif; font-weight: 750; font-size: 14px; fill: #94a3b8; letter-spacing: 3px; text-transform: uppercase; }
-    </style>
+
+    <!-- Top bar highlight gradient -->
+    <linearGradient id="trTopGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7dd3fc" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+
+    <!-- Leg gradient -->
+    <linearGradient id="trLegGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#2563eb" />
+    </linearGradient>
+
+    <!-- Soft cyan glow filter -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
   </defs>
-  <!-- Monogram Logo -->
-  <g transform="translate(10, 5)">
-    <path d="M15 20 H50" stroke="url(#logoGrad)" strokeWidth="7.5" strokeLinecap="round" />
-    <path d="M15 38 H38" stroke="url(#logoGrad)" strokeWidth="7.5" strokeLinecap="round" />
-    <path d="M30 20 V68" stroke="url(#logoGrad)" strokeWidth="7.5" strokeLinecap="round" />
-    <path d="M50 20 C68 20 68 38 50 38 H38" stroke="url(#logoGrad)" strokeWidth="7.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M48 38 L68 68" stroke="url(#logoGrad)" strokeWidth="7.5" strokeLinecap="round" />
+
+  <g transform="translate(0, 10)">
+    <!-- TR Emblem Monogram -->
+    <g transform="translate(185, 10)">
+      <!-- Top bar of T -->
+      <path d="M 0 0 L 80 0 C 105 0 115 15 115 32 C 115 38 110 44 100 44 L 60 44 C 52 44 48 38 48 30 L 48 22 L 0 22 Z" fill="url(#trTopGrad)" filter="url(#glow)" />
+      
+      <!-- Stem of T / Left vertical pillar -->
+      <path d="M 0 0 L 42 0 L 42 120 L 22 135 L 0 135 Z" fill="url(#trGrad)" />
+      
+      <!-- R Loop & Arch -->
+      <path d="M 42 30 C 42 22 52 18 64 18 C 96 18 112 30 112 56 C 112 82 92 94 62 94 L 42 94 Z" fill="url(#trGrad)" />
+      <path d="M 64 36 C 58 36 56 40 56 46 L 56 76 L 64 76 C 80 76 92 68 92 56 C 92 44 80 36 64 36 Z" fill="#090d16" />
+
+      <!-- R Swooping Leg -->
+      <path d="M 60 82 L 88 82 C 95 82 100 86 104 92 L 126 132 C 129 137 124 142 118 142 L 96 142 L 72 98 L 60 98 Z" fill="url(#trLegGrad)" />
+    </g>
+
+    <!-- TrustRide Text -->
+    <text x="250" y="225" text-anchor="middle" fill="#ffffff" font-family="'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif" font-weight="800" font-size="58" letter-spacing="-0.5px">TrustRide</text>
   </g>
-  <!-- Text Branding -->
-  <text x="105" y="44" class="title">TRUSTRIDE</text>
-  <text x="105" y="65" class="subtitle">AUDIT LEDGER CONSOLE</text>
 </svg>

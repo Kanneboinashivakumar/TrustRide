@@ -1,15 +1,38 @@
+# Dependencies
 node_modules/
+.pnpm-store/
+
+# Next.js & Build outputs
 .next/
-dist/
+out/
 build/
+dist/
+*.tsbuildinfo
+
+# Logs & Debugging
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment & Secrets
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.system_generated/
-out/
+
+# IDE & Editor Configs
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+
+# OS Files
 .DS_Store
+Thumbs.db
+
+# System Generated Logs
+.system_generated/
