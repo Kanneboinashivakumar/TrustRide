@@ -1203,11 +1203,93 @@ export default function Dashboard() {
               </motion.button>
             </div>
 
+            {/* INTERACTIVE 5-STEP ZERO-TRUST FLOW STEPPER */}
+            <motion.div 
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.15 }}
+              className="w-full mt-10 pt-8 border-t border-white/10"
+            >
+              <div className="text-center mb-6">
+                <span className="text-[11px] font-extrabold font-mono tracking-widest text-cyan-400 uppercase bg-cyan-500/10 border border-cyan-500/20 px-3 py-1 rounded-full shadow-sm">
+                  END-TO-END ZERO-TRUST COMMAND FLOW
+                </span>
+                <h3 className="text-xl font-black text-foreground mt-2 tracking-tight">5-Step Cryptographic Execution Pipeline</h3>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 text-left">
+                <motion.div 
+                  whileHover={{ y: -4, scale: 1.02 }}
+                  transition={{ duration: 0.2 }}
+                  className="bg-slate-950/70 border border-cyan-500/30 rounded-xl p-3.5 shadow-lg hover:border-cyan-400 hover:shadow-[0_0_20px_rgba(6,182,212,0.25)] transition-all cursor-pointer"
+                >
+                  <div className="text-[10px] font-mono font-bold text-cyan-400 mb-1">01. ISSUANCE</div>
+                  <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <Lock className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
+                    ECDSA P-256 Sign
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1 leading-tight">Private key signatures generated via simulated HSM vault.</p>
+                </motion.div>
+
+                <motion.div 
+                  whileHover={{ y: -4, scale: 1.02 }}
+                  transition={{ duration: 0.2 }}
+                  className="bg-slate-950/70 border border-blue-500/30 rounded-xl p-3.5 shadow-lg hover:border-blue-400 hover:shadow-[0_0_20px_rgba(59,130,246,0.25)] transition-all cursor-pointer"
+                >
+                  <div className="text-[10px] font-mono font-bold text-blue-400 mb-1">02. RELAY</div>
+                  <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <Wifi className="h-3.5 w-3.5 text-blue-400 shrink-0" />
+                    Untrusted Cloud
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1 leading-tight">Express API acts solely as a relay; holds no signing keys.</p>
+                </motion.div>
+
+                <motion.div 
+                  whileHover={{ y: -4, scale: 1.02 }}
+                  transition={{ duration: 0.2 }}
+                  className="bg-slate-950/70 border border-purple-500/30 rounded-xl p-3.5 shadow-lg hover:border-purple-400 hover:shadow-[0_0_20px_rgba(168,85,247,0.25)] transition-all cursor-pointer"
+                >
+                  <div className="text-[10px] font-mono font-bold text-purple-400 mb-1">03. VERIFIER</div>
+                  <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <ShieldCheck className="h-3.5 w-3.5 text-purple-400 shrink-0" />
+                    5-Gate Check
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1 leading-tight">ECU checks signature, expiry, nonce replay, & multi-sig policies.</p>
+                </motion.div>
+
+                <motion.div 
+                  whileHover={{ y: -4, scale: 1.02 }}
+                  transition={{ duration: 0.2 }}
+                  className="bg-slate-950/70 border border-amber-500/30 rounded-xl p-3.5 shadow-lg hover:border-amber-400 hover:shadow-[0_0_20px_rgba(245,158,11,0.25)] transition-all cursor-pointer"
+                >
+                  <div className="text-[10px] font-mono font-bold text-amber-400 mb-1">04. INTERLOCK</div>
+                  <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <Car className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                    0 km/h Safety Hold
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1 leading-tight">In-motion commands defer to HELD state until vehicle halts.</p>
+                </motion.div>
+
+                <motion.div 
+                  whileHover={{ y: -4, scale: 1.02 }}
+                  transition={{ duration: 0.2 }}
+                  className="bg-slate-950/70 border border-emerald-500/30 rounded-xl p-3.5 shadow-lg hover:border-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.25)] transition-all cursor-pointer"
+                >
+                  <div className="text-[10px] font-mono font-bold text-emerald-400 mb-1">05. FORENSICS</div>
+                  <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <Database className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                    SHA-256 Hash Chain
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1 leading-tight">Every event appended to tamper-evident audit timeline.</p>
+                </motion.div>
+              </div>
+            </motion.div>
+
             {/* Feature Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full mt-12 sm:mt-16 text-left">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full mt-10 text-left">
               <motion.div 
-                whileHover={{ y: -3 }}
-                className="bg-white/5 border border-white/5 rounded-[20px] p-5 backdrop-blur-md"
+                whileHover={{ y: -4, scale: 1.01 }}
+                className="bg-slate-950/60 border border-white/10 rounded-[20px] p-5 backdrop-blur-md hover:border-cyan-500/30 shadow-lg transition-all"
               >
                 <div className="h-8 w-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center mb-3">
                   <ShieldCheck className="h-4.5 w-4.5" />
@@ -1219,8 +1301,8 @@ export default function Dashboard() {
               </motion.div>
 
               <motion.div 
-                whileHover={{ y: -3 }}
-                className="bg-white/5 border border-white/5 rounded-[20px] p-5 backdrop-blur-md"
+                whileHover={{ y: -4, scale: 1.01 }}
+                className="bg-slate-950/60 border border-white/10 rounded-[20px] p-5 backdrop-blur-md hover:border-emerald-500/30 shadow-lg transition-all"
               >
                 <div className="h-8 w-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mb-3">
                   <Car className="h-4.5 w-4.5" />
@@ -1232,8 +1314,8 @@ export default function Dashboard() {
               </motion.div>
 
               <motion.div 
-                whileHover={{ y: -3 }}
-                className="bg-white/5 border border-white/5 rounded-[20px] p-5 backdrop-blur-md"
+                whileHover={{ y: -4, scale: 1.01 }}
+                className="bg-slate-950/60 border border-white/10 rounded-[20px] p-5 backdrop-blur-md hover:border-purple-500/30 shadow-lg transition-all"
               >
                 <div className="h-8 w-8 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center mb-3">
                   <Database className="h-4.5 w-4.5" />
@@ -1307,23 +1389,34 @@ export default function Dashboard() {
             )}
           </AnimatePresence>
 
-          {/* LEFT SIDEBAR NAVIGATION */}
+          {/* LEFT SIDEBAR / MOBILE TOP NAVIGATION */}
           <aside 
-            className="w-full md:w-64 sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto scrollbar-none bg-slate-950/40 border border-white/5 rounded-[20px] p-4 flex flex-col gap-4 shadow-xl select-none shrink-0 self-start"
+            className="w-full md:w-64 md:sticky md:top-6 md:max-h-[calc(100vh-3rem)] md:overflow-y-auto scrollbar-none bg-slate-950/40 border border-white/5 rounded-[20px] p-3.5 md:p-4 flex flex-col gap-3 md:gap-4 shadow-xl select-none shrink-0 self-start z-30"
             role="navigation"
             aria-label="Dashboard Panels"
           >
-            <div 
-              onClick={() => setViewMode("landing")} 
-              className="flex items-center gap-3 px-2.5 py-2 cursor-pointer hover:opacity-95 transition-all duration-300 group border border-white/5 bg-slate-900/40 rounded-xl justify-center md:justify-start"
-            >
-              <TrustRideBranding />
+            <div className="flex items-center justify-between md:flex-col md:items-stretch gap-3">
+              <div 
+                onClick={() => setViewMode("landing")} 
+                className="flex items-center gap-3 px-2.5 py-2 cursor-pointer hover:opacity-95 transition-all duration-300 group border border-white/5 bg-slate-900/40 rounded-xl justify-center md:justify-start"
+              >
+                <TrustRideBranding />
+              </div>
+              <div className="flex md:hidden items-center gap-2">
+                <button
+                  onClick={handleStartDemo}
+                  disabled={demoActive}
+                  className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg font-bold tracking-wider uppercase transition-colors text-[10px] disabled:opacity-40 font-mono"
+                >
+                  Autoplay
+                </button>
+              </div>
             </div>
 
-            <nav className="flex flex-col gap-1 mt-2">
+            <nav className="flex flex-row md:flex-col gap-1.5 overflow-x-auto md:overflow-visible scrollbar-none pb-1 md:pb-0 w-full shrink-0">
               <button
                 onClick={() => setActiveTab("overview")}
-                className={`flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold tracking-wide rounded-xl border transition-all ${activeTab === "overview" ? "bg-white/5 border-white/10 text-cyan-400 cyber-glow-cyan" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5"}`}
+                className={`flex items-center gap-2 md:gap-3 px-3 py-2 md:px-3.5 md:py-2.5 text-xs font-bold tracking-wide rounded-xl border transition-all shrink-0 whitespace-nowrap ${activeTab === "overview" ? "bg-white/5 border-white/10 text-cyan-400 cyber-glow-cyan" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5"}`}
                 aria-selected={activeTab === "overview"}
                 role="tab"
               >
@@ -1332,7 +1425,7 @@ export default function Dashboard() {
               </button>
               <button
                 onClick={() => setActiveTab("financier")}
-                className={`flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold tracking-wide rounded-xl border transition-all ${activeTab === "financier" ? "bg-white/5 border-white/10 text-cyan-400 cyber-glow-cyan" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5"}`}
+                className={`flex items-center gap-2 md:gap-3 px-3 py-2 md:px-3.5 md:py-2.5 text-xs font-bold tracking-wide rounded-xl border transition-all shrink-0 whitespace-nowrap ${activeTab === "financier" ? "bg-white/5 border-white/10 text-cyan-400 cyber-glow-cyan" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5"}`}
                 aria-selected={activeTab === "financier"}
                 role="tab"
               >
@@ -1341,7 +1434,7 @@ export default function Dashboard() {
               </button>
               <button
                 onClick={() => setActiveTab("simulator")}
-                className={`flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold tracking-wide rounded-xl border transition-all ${activeTab === "simulator" ? "bg-white/5 border-white/10 text-cyan-400 cyber-glow-cyan" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5"}`}
+                className={`flex items-center gap-2 md:gap-3 px-3 py-2 md:px-3.5 md:py-2.5 text-xs font-bold tracking-wide rounded-xl border transition-all shrink-0 whitespace-nowrap ${activeTab === "simulator" ? "bg-white/5 border-white/10 text-cyan-400 cyber-glow-cyan" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5"}`}
                 aria-selected={activeTab === "simulator"}
                 role="tab"
               >
@@ -1350,7 +1443,7 @@ export default function Dashboard() {
               </button>
               <button
                 onClick={() => setActiveTab("driver")}
-                className={`flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold tracking-wide rounded-xl border transition-all ${activeTab === "driver" ? "bg-white/5 border-white/10 text-cyan-400 cyber-glow-cyan" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5"}`}
+                className={`flex items-center gap-2 md:gap-3 px-3 py-2 md:px-3.5 md:py-2.5 text-xs font-bold tracking-wide rounded-xl border transition-all shrink-0 whitespace-nowrap ${activeTab === "driver" ? "bg-white/5 border-white/10 text-cyan-400 cyber-glow-cyan" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5"}`}
                 aria-selected={activeTab === "driver"}
                 role="tab"
               >
@@ -1359,7 +1452,7 @@ export default function Dashboard() {
               </button>
               <button
                 onClick={() => setActiveTab("audit")}
-                className={`flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold tracking-wide rounded-xl border transition-all ${activeTab === "audit" ? "bg-white/5 border-white/10 text-cyan-400 cyber-glow-cyan" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5"}`}
+                className={`flex items-center gap-2 md:gap-3 px-3 py-2 md:px-3.5 md:py-2.5 text-xs font-bold tracking-wide rounded-xl border transition-all shrink-0 whitespace-nowrap ${activeTab === "audit" ? "bg-white/5 border-white/10 text-cyan-400 cyber-glow-cyan" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5"}`}
                 aria-selected={activeTab === "audit"}
                 role="tab"
               >
@@ -1368,7 +1461,7 @@ export default function Dashboard() {
               </button>
               <button
                 onClick={() => setActiveTab("architecture")}
-                className={`flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold tracking-wide rounded-xl border transition-all ${activeTab === "architecture" ? "bg-white/5 border-white/10 text-cyan-400 cyber-glow-cyan" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5"}`}
+                className={`flex items-center gap-2 md:gap-3 px-3 py-2 md:px-3.5 md:py-2.5 text-xs font-bold tracking-wide rounded-xl border transition-all shrink-0 whitespace-nowrap ${activeTab === "architecture" ? "bg-white/5 border-white/10 text-cyan-400 cyber-glow-cyan" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5"}`}
                 aria-selected={activeTab === "architecture"}
                 role="tab"
               >
@@ -1377,7 +1470,7 @@ export default function Dashboard() {
               </button>
               <button
                 onClick={() => setActiveTab("analytics")}
-                className={`flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold tracking-wide rounded-xl border transition-all ${activeTab === "analytics" ? "bg-white/5 border-white/10 text-cyan-400 cyber-glow-cyan" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5"}`}
+                className={`flex items-center gap-2 md:gap-3 px-3 py-2 md:px-3.5 md:py-2.5 text-xs font-bold tracking-wide rounded-xl border transition-all shrink-0 whitespace-nowrap ${activeTab === "analytics" ? "bg-white/5 border-white/10 text-cyan-400 cyber-glow-cyan" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5"}`}
                 aria-selected={activeTab === "analytics"}
                 role="tab"
               >
@@ -1386,7 +1479,7 @@ export default function Dashboard() {
               </button>
               <button
                 onClick={() => setActiveTab("market")}
-                className={`flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold tracking-wide rounded-xl border transition-all ${activeTab === "market" ? "bg-white/5 border-white/10 text-cyan-400 cyber-glow-cyan" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5"}`}
+                className={`flex items-center gap-2 md:gap-3 px-3 py-2 md:px-3.5 md:py-2.5 text-xs font-bold tracking-wide rounded-xl border transition-all shrink-0 whitespace-nowrap ${activeTab === "market" ? "bg-white/5 border-white/10 text-cyan-400 cyber-glow-cyan" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5"}`}
                 aria-selected={activeTab === "market"}
                 role="tab"
               >
@@ -1395,7 +1488,7 @@ export default function Dashboard() {
               </button>
               <button
                 onClick={() => setActiveTab("settings")}
-                className={`flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold tracking-wide rounded-xl border transition-all ${activeTab === "settings" ? "bg-white/5 border-white/10 text-cyan-400 cyber-glow-cyan" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5"}`}
+                className={`flex items-center gap-2 md:gap-3 px-3 py-2 md:px-3.5 md:py-2.5 text-xs font-bold tracking-wide rounded-xl border transition-all shrink-0 whitespace-nowrap ${activeTab === "settings" ? "bg-white/5 border-white/10 text-cyan-400 cyber-glow-cyan" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5"}`}
                 aria-selected={activeTab === "settings"}
                 role="tab"
               >
@@ -1404,7 +1497,7 @@ export default function Dashboard() {
               </button>
             </nav>
 
-            <div className="mt-auto border-t border-white/5 pt-4 flex flex-col gap-2.5 text-[10px] text-muted-foreground font-mono">
+            <div className="hidden md:flex mt-auto border-t border-white/5 pt-4 flex-col gap-2.5 text-[10px] text-muted-foreground font-mono">
               <div className="flex justify-between items-center px-1">
                 <span>JUDGE HELPER</span>
                 <button 
@@ -1585,7 +1678,13 @@ export default function Dashboard() {
               {/* TAB: OVERVIEW                             */}
               {/* ========================================== */}
               {activeTab === "overview" && (
-                <div className="flex flex-col gap-6 animate-fadeIn">
+                <motion.div 
+                  key="tab-overview"
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, ease: "easeOut" }}
+                  className="flex flex-col gap-6"
+                >
                   
                   {/* Top Stats Cards Grid */}
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1699,14 +1798,20 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               )}
 
               {/* ========================================== */}
               {/* TAB: FINANCIER                            */}
               {/* ========================================== */}
               {activeTab === "financier" && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fadeIn font-mono">
+                <motion.div 
+                  key="tab-financier"
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, ease: "easeOut" }}
+                  className="grid grid-cols-1 lg:grid-cols-3 gap-6 font-mono"
+                >
                   <div className="lg:col-span-1 flex flex-col gap-6">
                     {/* Policy Mode Selector Card */}
                     <div className="bg-slate-950/40 border border-white/10 rounded-[20px] p-5 shadow-xl flex flex-col gap-3">
@@ -2071,14 +2176,20 @@ export default function Dashboard() {
                       )}
                     </div>
                   </div>
-                </div>
+                </motion.div>
               )}
 
               {/* ========================================== */}
               {/* TAB: VEHICLE SIMULATOR & DIGITAL TWIN MAP  */}
               {/* ========================================== */}
               {activeTab === "simulator" && (
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 animate-fadeIn font-mono">
+                <motion.div 
+                  key="tab-simulator"
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, ease: "easeOut" }}
+                  className="grid grid-cols-1 xl:grid-cols-3 gap-6 font-mono"
+                >
                   
                   {/* LEFT COLUMN: UBER/TESLA FLEET TELEMETRY & IGNITION HUD */}
                   <div className="xl:col-span-1 flex flex-col gap-5">
@@ -2461,14 +2572,20 @@ export default function Dashboard() {
 
                   </div>
 
-                </div>
+                </motion.div>
               )}
 
               {/* ========================================== */}
               {/* TAB: DRIVER PANEL                         */}
               {/* ========================================== */}
               {activeTab === "driver" && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fadeIn">
+                <motion.div 
+                  key="tab-driver"
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, ease: "easeOut" }}
+                  className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+                >
                   <div className="lg:col-span-1 flex flex-col gap-6">
                     <div className="bg-slate-950/40 border border-white/5 rounded-[20px] p-5 shadow-xl flex flex-col gap-4">
                       <div className="border-b border-white/5 pb-2">
@@ -2676,14 +2793,20 @@ export default function Dashboard() {
                       )}
                     </AnimatePresence>
                   </div>
-                </div>
+                </motion.div>
               )}
 
               {/* ========================================== */}
               {/* TAB: AUDIT LEDGER                         */}
               {/* ========================================== */}
               {activeTab === "audit" && (
-                <div className="flex flex-col gap-6 animate-fadeIn font-mono">
+                <motion.div 
+                  key="tab-audit"
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, ease: "easeOut" }}
+                  className="flex flex-col gap-6 font-mono"
+                >
                   
                   <div className="bg-slate-950/40 border border-white/5 rounded-[20px] p-5 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
@@ -2809,14 +2932,20 @@ export default function Dashboard() {
                       </div>
                     )}
                   </div>
-                </div>
+                </motion.div>
               )}
 
               {/* ========================================== */}
               {/* TAB: ARCHITECTURE DIAGRAM                 */}
               {/* ========================================== */}
               {activeTab === "architecture" && (
-                <div className="bg-slate-950/40 border border-white/5 rounded-[20px] p-5 shadow-xl flex flex-col gap-6 animate-fadeIn font-mono">
+                <motion.div 
+                  key="tab-architecture"
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, ease: "easeOut" }}
+                  className="bg-slate-950/40 border border-white/5 rounded-[20px] p-5 shadow-xl flex flex-col gap-6 font-mono"
+                >
                   <div className="border-b border-white/5 pb-2">
                     <h3 className="text-sm font-extrabold uppercase tracking-wider text-cyan-400">Interactive Architecture Diagram</h3>
                     <p className="text-xs text-muted-foreground mt-0.5 font-mono">Cryptographic verification protocol layers</p>
@@ -2903,14 +3032,20 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               )}
 
               {/* ========================================== */}
               {/* TAB: ANALYTICS                            */}
               {/* ========================================== */}
               {activeTab === "analytics" && (
-                <div className="flex flex-col gap-6 animate-fadeIn">
+                <motion.div 
+                  key="tab-analytics"
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, ease: "easeOut" }}
+                  className="flex flex-col gap-6"
+                >
                   
                   <div className="bg-slate-950/40 border border-white/5 rounded-[20px] p-5 shadow-xl flex flex-col gap-4">
                     <div className="border-b border-white/5 pb-2">
@@ -2976,14 +3111,20 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               )}
 
               {/* ========================================== */}
               {/* TAB: IMPACT & MARKET                       */}
               {/* ========================================== */}
               {activeTab === "market" && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fadeIn font-mono text-xs">
+                <motion.div 
+                  key="tab-market"
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, ease: "easeOut" }}
+                  className="grid grid-cols-1 lg:grid-cols-3 gap-6 font-mono text-xs"
+                >
                   {/* Left Column: Problem and Vulnerability */}
                   <div className="lg:col-span-1 flex flex-col gap-6">
                     <motion.div 
@@ -3139,14 +3280,20 @@ export default function Dashboard() {
                       </div>
                     </motion.div>
                   </div>
-                </div>
+                </motion.div>
               )}
 
               {/* ========================================== */}
               {/* TAB: SETTINGS                             */}
               {/* ========================================== */}
               {activeTab === "settings" && (
-                <div className="bg-slate-950/40 border border-white/5 rounded-[20px] p-5 shadow-xl flex flex-col gap-6 animate-fadeIn font-mono">
+                <motion.div 
+                  key="tab-settings"
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, ease: "easeOut" }}
+                  className="bg-slate-950/40 border border-white/5 rounded-[20px] p-5 shadow-xl flex flex-col gap-6 font-mono"
+                >
                   <div className="border-b border-white/5 pb-2 font-mono">
                     <h3 className="text-sm font-extrabold uppercase tracking-wider text-cyan-400">Governed Control Settings</h3>
                     <p className="text-xs text-muted-foreground mt-0.5">Manage simulated HSM keys and ECU trust stores</p>
@@ -3184,7 +3331,7 @@ export default function Dashboard() {
                       </button>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               )}
 
             </div>
