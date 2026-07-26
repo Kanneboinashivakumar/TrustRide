@@ -197,6 +197,12 @@ export default function Dashboard() {
   // Navigation & View Mode State
   const [viewMode, setViewMode] = useState<ViewMode>("landing");
   const [activeTab, setActiveTab] = useState<Tab>("overview");
+
+  // Reset window scroll position to top when switching navigation tabs
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [activeTab]);
+
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [auditLog, setAuditLog] = useState<AuditLogResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
