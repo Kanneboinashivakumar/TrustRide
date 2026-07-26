@@ -214,19 +214,16 @@ An interactive sandbox lets you trigger real exploit patterns and watch the ECU 
 ## 📸 Screenshots
 
 #### Landing Page & Hero Section
-![TrustRide landing page](./docs/screenshots/landing.png)
+![TrustRide Landing Page](assets/TrustRidelandingpage.png)
 
 #### Control Center Overview
-![TrustRide dashboard overview](./docs/screenshots/dashboard.png)
-
-#### Threat Sandbox & Command Dispatcher
-![Financier Sandbox Screenshot](./docs/screenshots/sandbox.png)
+![TrustRide Dashboard Overview](assets/TrustRidedashboardoverview.png)
 
 #### Digital Twin Telemetry Map
-![Vehicle Simulator Screenshot](./docs/screenshots/simulator.png)
+![Vehicle Simulator Screenshot](assets/VehicleSimulatorScreenshot.png)
 
 #### Cryptographic Audit Ledger Forensics
-![Audit Ledger Screenshot](./docs/screenshots/ledger.png)
+![Audit Ledger Screenshot](assets/AuditLedgerScreenshot.png)
 
 ---
 
