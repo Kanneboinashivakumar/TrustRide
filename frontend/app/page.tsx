@@ -1303,7 +1303,7 @@ export default function Dashboard() {
 
           {/* LEFT SIDEBAR NAVIGATION */}
           <aside 
-            className="w-full md:w-64 bg-slate-950/40 border border-white/5 rounded-[20px] p-4 flex flex-col gap-4 shadow-xl select-none shrink-0 self-start"
+            className="w-full md:w-64 sticky top-6 bg-slate-950/40 border border-white/5 rounded-[20px] p-4 flex flex-col gap-4 shadow-xl select-none shrink-0 self-start"
             role="navigation"
             aria-label="Dashboard Panels"
           >
