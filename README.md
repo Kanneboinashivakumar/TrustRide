@@ -252,14 +252,36 @@ cd backend && npm install
 cd ../frontend && npm install
 ```
 
-### Run the scenario test suite
+### Run the full test suite (Vitest)
 
-Confirms all 8 core security scenarios pass (including Dual-Key Governance & Partial Signature Attack rejection) before touching the UI:
+TrustRide includes a comprehensive, 3-tier Vitest suite covering unit logic, protocol boundary edge cases, and API-level integration scenarios:
 
 ```bash
 cd backend
-npm run test:scenarios
+
+# Run the complete test suite (Unit, Edge-cases, & Integration)
+npm test
+
+# Run isolated sub-suites
+npm run test:unit          # Core crypto, hash chain, and engine verifier unit tests
+npm run test:edge          # Protocol boundary & security edge cases
+npm run test:integration   # 8 API-level scenario tests
 ```
+
+#### Test Suite Architecture Overview:
+- 🧪 **Unit Tests (`test/unit/`)**:
+  - `crypto.test.ts`: ECDSA P-256 key pair generation, signature verification, single-field mutation detection, malformed PEM key handling, and strict canonical serialization order.
+  - `hashChain.test.ts`: Genesis entry zero-hash anchoring, chain linking integrity, single-byte post-hoc tamper detection, and corrective block restoration.
+  - `engine.test.ts`: ECU verifier 5-check isolation (`SIGNATURE`, `EXPIRY`, `REPLAY`, `CHAIN`, `MOTION INTERLOCK`).
+- ⚡ **Edge Case Tests (`test/edge-cases/`)**:
+  - Expiry timestamp at exact `5:00` boundary condition (`<= Date.now()`).
+  - `HELD` command whose 5-minute expiry window elapses while vehicle is in motion (dropped upon stop).
+  - Dual-key multi-sig policy with 1 of 2 signatures present (`MULTISIG` rejection).
+  - Cross-command nonce replay across different command actions/vehicle targets (`REPLAY` rejection).
+- 🔄 **Integration Scenarios (`test/integration/`)**:
+  - 8 API scenarios executed across 9 test blocks verifying full lifecycle flow from financier request to vehicle verification, driver disputes, tampered audit detection, and multi-sig co-authorization.
+- 🧹 **Code Quality & Linting**:
+  - ESLint v10 (`@typescript-eslint/recommended` flat config) is configured for `backend/` (`npm run lint`) and passes cleanly with **0 errors and 0 warnings**.
 
 ### Run locally
 
@@ -322,7 +344,7 @@ For complete cloud deployment configurations (including environment variable set
 
 - [ ] **Physical HSM integration** — verification testing on real ATECC608-class secure element boards
 - [ ] **CAN bus integration** — command decoding over simulated CAN network frames
-- [ ] **Multi-signature policies** — require multiple distinct financier signatures for immobilization
+- [x] **Multi-signature policies** — 2-of-2 dual-key governance (Financier + Ops Admin) with atomic co-signing (Completed)
 - [ ] **Offline verification** — fallback verification via time-based one-time tokens
 - [ ] **Beyond e-rickshaws** — the same governance layer extends to e-two-wheelers, e-autos, and fleet/last-mile delivery EVs using the same BMS/VCU pattern
 

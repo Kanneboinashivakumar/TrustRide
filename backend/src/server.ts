@@ -129,8 +129,8 @@ app.post("/api/commands", (req, res) => {
     }
     const result = issueAndDispatch({ vehicleId, action, reasonCode, reasonText, issuerId });
     res.status(201).json(result);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+  } catch (err: unknown) {
+    res.status(400).json({ error: (err as Error).message });
   }
 });
 
@@ -143,8 +143,8 @@ app.get("/api/commands/:vehicleId", (req, res) => {
     }
     const records = recordsForVehicle(vehicleId);
     res.json(records);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: (err as Error).message });
   }
 });
 
@@ -158,8 +158,8 @@ app.post("/api/vehicles/:vehicleId/motion", (req, res) => {
     }
     const outcome = setMotion(vehicleId, isMoving);
     res.json(outcome);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+  } catch (err: unknown) {
+    res.status(400).json({ error: (err as Error).message });
   }
 });
 
@@ -168,8 +168,8 @@ app.get("/api/audit-log", (req, res) => {
   try {
     const verification = auditLog.verifyChain();
     res.json(verification);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: (err as Error).message });
   }
 });
 
@@ -182,8 +182,8 @@ app.post("/api/audit-log/tamper-demo", (req, res) => {
       return res.status(404).json({ error: "Audit log is empty or entry not found" });
     }
     res.json({ message: "Audit log tampered successfully", tampered });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: (err as Error).message });
   }
 });
 
@@ -192,8 +192,8 @@ app.post("/api/audit-log/restore", (req, res) => {
   try {
     const restoredCount = auditLog.restoreTamperedEntries();
     res.json({ message: "Audit log restored successfully", restoredCount });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: (err as Error).message });
   }
 });
 
@@ -207,8 +207,8 @@ app.get("/api/vehicles/:vehicleId/driver-view", (req, res) => {
     }
     const history = recordsForVehicle(vehicleId);
     res.json({ vehicle, history });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: (err as Error).message });
   }
 });
 
@@ -236,8 +236,8 @@ app.post("/api/vehicles/:vehicleId/dispute", (req, res) => {
     );
 
     res.json(record);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: (err as Error).message });
   }
 });
 
@@ -254,8 +254,8 @@ app.post("/api/commands/tamper-demo", (req, res) => {
     }
     const result = dispatchTamperedCommand(vehicleId, issuerId);
     res.json(result);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+  } catch (err: unknown) {
+    res.status(400).json({ error: (err as Error).message });
   }
 });
 
@@ -268,8 +268,8 @@ app.post("/api/commands/expire-demo", (req, res) => {
     }
     const result = dispatchExpiredCommand(vehicleId, issuerId);
     res.json(result);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+  } catch (err: unknown) {
+    res.status(400).json({ error: (err as Error).message });
   }
 });
 
@@ -285,8 +285,8 @@ app.post("/api/commands/replay-demo", (req, res) => {
       return res.status(400).json({ error: "No prior commands available to replay" });
     }
     res.json(result);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+  } catch (err: unknown) {
+    res.status(400).json({ error: (err as Error).message });
   }
 });
 
@@ -345,8 +345,8 @@ app.post("/api/vehicles/reset-demo", (req, res) => {
     auditLog.append("SYSTEM", "ACKNOWLEDGED", "Demo state reset triggered by admin/simulator.");
 
     res.json({ message: "Demo state reset successfully" });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: (err as Error).message });
   }
 });
 
@@ -380,8 +380,8 @@ app.post("/api/commands/multisig/initiate", (req, res) => {
     const { vehicleId, action, reasonCode, reasonText, issuerId } = req.body;
     const entry = initiateMultiSig({ vehicleId, action, reasonCode, reasonText, issuerId });
     res.json(entry);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+  } catch (err: unknown) {
+    res.status(400).json({ error: (err as Error).message });
   }
 });
 
@@ -391,8 +391,8 @@ app.post("/api/commands/multisig/cosign", (req, res) => {
     const { entryId, cosignerId } = req.body;
     const result = cosignAndDispatch(entryId, cosignerId);
     res.json(result);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+  } catch (err: unknown) {
+    res.status(400).json({ error: (err as Error).message });
   }
 });
 
@@ -407,8 +407,8 @@ app.post("/api/commands/partial-sig-demo", (req, res) => {
     const { vehicleId, issuerId } = req.body;
     const result = dispatchPartialSigCommand(vehicleId, issuerId);
     res.json(result);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+  } catch (err: unknown) {
+    res.status(400).json({ error: (err as Error).message });
   }
 });
 
