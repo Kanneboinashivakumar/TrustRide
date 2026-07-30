@@ -10,11 +10,11 @@ async function runHealthCheck() {
     console.log("[Health] Checking backend root at http://localhost:4000/...");
     const res = await fetch("http://localhost:4000/");
     assert.equal(res.status, 200);
-    const data = await res.json() as any;
+    const data = (await res.json()) as Record<string, unknown>;
     assert.equal(data.status, "online");
     console.log("✓ Backend root is ONLINE and returning status JSON.");
-  } catch (err: any) {
-    console.error("❌ Backend root check failed:", err.message);
+  } catch (err: unknown) {
+    console.error("❌ Backend root check failed:", (err as Error).message);
     process.exit(1);
   }
 
@@ -23,12 +23,12 @@ async function runHealthCheck() {
     console.log("[Health] Checking backend API at http://localhost:4000/api/vehicles...");
     const res = await fetch("http://localhost:4000/api/vehicles");
     assert.equal(res.status, 200);
-    const data = await res.json() as any[];
+    const data = (await res.json()) as Array<unknown>;
     assert(Array.isArray(data));
     assert.equal(data.length, 3);
     console.log(`✓ Backend API is healthy. Found ${data.length} pre-seeded vehicles.`);
-  } catch (err: any) {
-    console.error("❌ Backend API check failed:", err.message);
+  } catch (err: unknown) {
+    console.error("❌ Backend API check failed:", (err as Error).message);
     process.exit(1);
   }
 
@@ -38,8 +38,8 @@ async function runHealthCheck() {
     const res = await fetch("http://localhost:3000/");
     assert.equal(res.status, 200);
     console.log("✓ Frontend dev server is ONLINE and serving index page.");
-  } catch (err: any) {
-    console.error("❌ Frontend check failed:", err.message);
+  } catch (err: unknown) {
+    console.error("❌ Frontend check failed:", (err as Error).message);
     process.exit(1);
   }
 

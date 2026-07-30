@@ -10,23 +10,28 @@ decision you already made.
 ---
 
 ## Last updated
-2026-07-25, Session 6 COMPLETED — Antigravity (Gemini).
+2026-07-27, Session 7 COMPLETED — Antigravity (Gemini).
 
 ## Current phase
-Testing & Verification → Feature Extension — Multi-Signature Verification Completed
+Testing & Verification → Production-Grade Comprehensive Vitest Suite (29/29 Tests Passing)
 
 ## Completed
+- Migrated test suite from custom `scenarios.ts` runner to Vitest test framework in `backend/`.
+- Created structured `/backend/test/` directory hierarchy (`unit/`, `edge-cases/`, `integration/`).
+- Added isolated Unit tests (`unit/crypto.test.ts`, `unit/hashChain.test.ts`, `unit/engine.test.ts`) covering signing/verification, single-field mutation detection, malformed key handling, hash-chain tampering/restoration, and isolated ECU 5-check evaluation.
+- Added Edge-Case tests (`edge-cases/edgeCases.test.ts`) covering 5:00 boundary condition, HELD command expiration during vehicle motion, partial signature multi-sig rejection, and cross-command nonce replay.
+- Ported all 8 API integration scenarios (`integration/scenarios.test.ts`) to Vitest test format.
+- Verified 100% test pass rate across all 5 test files (29 out of 29 tests passing cleanly).
 - Express backend server (`backend/src/server.ts`) implementing command issuance, history, motion controls, audit logs, driver view, and demo endpoints.
-- Integration test suite (`backend/test/scenarios.ts`) testing all 8 scenarios (including multi-sig verification and partial-signature attack rejection) against the running API.
 - Dual-key provisioning (`fin-001` + `ops-001`) in the simulated HSM (`secureElement.ts` & `server.ts`).
 - Upgraded `Command` & `VerificationResult` schemas with `signatures` array and `MULTISIG` failed check (`types.ts`).
 - Upgraded vehicle verifier `Check 1` in `verifier.ts` to require 2-of-2 distinct valid signatures under dual-key policy.
 - Backend pending co-signature buffer (`pendingMultiSigCommands`) with automatic 5-min expiry sweep in `vehicleSim.ts`.
 - Multi-signature API endpoints (`/api/commands/multisig/*` and `/api/commands/partial-sig-demo`).
-- Frontend UI with Dual-Key Governance toggle (default ON), pending co-signature buffer card with precise wording ("Financier (fin-001): Authorization Recorded ✓", "Ops Admin (ops-001): Awaiting Co-Authorization…"), and 5th Threat Sandbox attack option ("5. Partial Signature Attack (1 of 2 Keys)").
+- Frontend UI with Dual-Key Governance toggle (default ON), pending co-signature buffer card, and 5th Threat Sandbox attack option ("5. Partial Signature Attack (1 of 2 Keys)").
 
 ## In progress
-- None (Multi-Signature Verification feature fully implemented and verified).
+- None (Comprehensive test suite fully implemented, verified, and passing).
 
 ## Not started
 - None.
@@ -84,5 +89,17 @@ Testing & Verification → Feature Extension — Multi-Signature Verification Co
 - AI/tool used: Antigravity (Gemini)
 - What was built: Map control overlays (zoom levels, compass, legend, route ETA info box), technical terminology corrections (Tamper-Evident Hash-Chained Audit Ledger, Distributed/Vehicle-Centric Trust Architecture, Simulated HSM/GPS), compliance and safety framework reference blocks, inline battery/signal selector metadata, audit ledger "Simulate Corrective Reset" rename with caption, corrective-block append logic (orphaning/leaving tampered block in log as forensic evidence), and sidebar "Reseed Demo Data" quick-access button.
 - What broke / had to be reworked: Rewrote audit log recovery logic to append a corrective block referencing the last valid hash instead of rewriting in-place, modifying verifyChain to traverse the link chain backwards from the tip to determine chainIntact status while keeping historic invalid block markers.
-- Handoff note for next session: Project is fully demo-ready and verified. All planning checks, cryptographic pipelines, safety interlocks, and forensics demonstration states are 100% functional.
+### Session 6
+- Date: 2026-07-25
+- AI/tool used: Antigravity (Gemini)
+- What was built: Multi-Signature Verification feature, co-authorization buffer card, dual-key policy toggle, 5th Threat Sandbox attack option ("Partial Signature Attack"), judge autoplay mode improvements, and mobile tab bar navigation overhaul.
+- Handoff note for next session: Mobile responsiveness and multi-sig feature complete.
+
+### Session 7
+- Date: 2026-07-27
+- AI/tool used: Antigravity (Gemini)
+- What was built: Migrated test suite to Vitest. Implemented 3-tier test structure (`unit/`, `edge-cases/`, `integration/`) with 29 comprehensive tests covering ECDSA P-256 crypto, SHA-256 audit hash-chain integrity, ECU verifier 5-check isolation, protocol edge cases (exact 5:00 expiry boundary, expired HELD commands, partial multi-sig, cross-command nonce replay), and 8 API-level scenario tests. Updated README.md and STATE.md.
+- What broke / had to be reworked: Fixed unit test command tracking by registering test commands in `commandRecords` before `vehicleVerifier.process()`, and provisioned simulated vehicle SE keys for vehicle acknowledgement signature generation.
+- Handoff note for next session: Full Vitest test suite is 100% green (29/29 passing across 5 test files). Ready for git commit and presentation.
+
 
