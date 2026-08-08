@@ -15,7 +15,7 @@
 import { canonicalizeCommand, commandHash } from "../crypto/canonical.js";
 import { secureElement, verifySignature } from "../crypto/secureElement.js";
 import { auditLog } from "../audit/auditLog.js";
-import { setStatus, upsertRecord, vehicles, multiSigPolicy } from "../models/store.js";
+import { setStatus, upsertRecord, vehicles, getVehicle, multiSigPolicy } from "../models/store.js";
 import type { Command, VerificationResult } from "../models/types.js";
 
 const GENESIS = "GENESIS";
@@ -44,7 +44,7 @@ class VehicleVerifier {
    * Logs every outcome to the audit chain and updates the command record.
    */
   process(cmd: Command): VerificationResult {
-    const vehicle = vehicles.get(cmd.vehicleId);
+    const vehicle = getVehicle(cmd.vehicleId) || vehicles.get(cmd.vehicleId);
     if (!vehicle) {
       return this.reject(cmd, "CHAIN", `Unknown vehicle '${cmd.vehicleId}'`);
     }
@@ -166,7 +166,7 @@ class VehicleVerifier {
    * gone stale while held.
    */
   recheckPending(vehicleId: string): VerificationResult | null {
-    const vehicle = vehicles.get(vehicleId);
+    const vehicle = getVehicle(vehicleId) || vehicles.get(vehicleId);
     if (!vehicle?.pendingCommand) return null;
     const cmd = vehicle.pendingCommand;
 
