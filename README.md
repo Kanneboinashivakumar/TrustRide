@@ -118,29 +118,29 @@ TrustRide enforces strict separation of duties across client portals, cryptograp
 
 ```mermaid
 graph TD
-    Operator[Operator / Command Center] -->|1. Request Command| Policy{Approval Policy}
+    Operator["Operator / Command Center"] -->|1. Request Command| Policy{Approval Policy}
     
-    Policy -->|Routine 1/1| Pipeline[7-Stage Verification Pipeline]
-    Policy -->|Critical 2/2| Quorum[Approval Center: 2-of-2 Co-Signature]
+    Policy -->|Routine 1/1| Pipeline["7-Stage Verification Pipeline"]
+    Policy -->|Critical 2/2| Quorum["Approval Center: 2-of-2 Co-Signature"]
     
     Quorum -->|Sarah 1/2 + Aisha 2/2| Pipeline
     
     subgraph "7-Stage CI/CD Verification Engine"
-        Pipeline --> V1[Stage 1: ECDSA P-256 Signature]
-        V1 --> V2[Stage 2: Timestamp TTL < 30s]
-        V2 --> V3[Stage 3: Nonce Replay Check]
-        V3 --> V4[Stage 4: Multi-Sig Quorum Check (Policy-Based)]
-        V4 --> V5[Stage 5: ASIL-D Motion Safety Interlock]
-        V5 --> V6[Stage 6: Simulated Gateway CAN Dispatch]
-        V6 --> V7[Stage 7: SHA-256 Ledger Commit]
+        Pipeline --> V1["Stage 1: ECDSA P-256 Signature"]
+        V1 --> V2["Stage 2: Timestamp TTL < 30s"]
+        V2 --> V3["Stage 3: Nonce Replay Check"]
+        V3 --> V4["Stage 4: Multi-Sig Quorum Check"]
+        V4 --> V5["Stage 5: ASIL-D Motion Safety Interlock"]
+        V5 --> V6["Stage 6: Simulated Gateway CAN Dispatch"]
+        V6 --> V7["Stage 7: SHA-256 Ledger Commit"]
     end
     
-    V5 -->|Speed > 0| Deferred[Status: HELD / Decelerating]
+    V5 -->|Speed > 0| Deferred["Status: HELD / Decelerating"]
     Deferred -->|Speed = 0| V6
     
-    V7 --> Twin[Digital Twin Telemetry Update]
-    V7 --> Audit[SHA-256 Audit Ledger]
-    V7 --> Analytics[Analytics & Compliance Sync]
+    V7 --> Twin["Digital Twin Telemetry Update"]
+    V7 --> Audit["SHA-256 Audit Ledger"]
+    V7 --> Analytics["Analytics & Compliance Sync"]
 ```
 
 ---
