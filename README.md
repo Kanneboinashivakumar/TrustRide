@@ -2,20 +2,19 @@
 
 <img src="assets/TrustRideBranding.png" alt="TrustRide Logo" width="480">
 
-### Zero-Trust, Decentralized Cryptographic Remote EV Governance Platform
+### Zero-Trust, Hardware-Cryptographic Remote EV Fleet Governance Platform
 
-*Governed & safe remote immobilization — for a system nobody currently has to answer to.*
+*Governed, multi-signature verified & motion-safe remote vehicle command execution — replacing unauthenticated direct API overrides with end-to-end cryptographic accountability.*
 
-[![Next.js](https://img.shields.io/badge/Next.js-14-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-6.4-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25_typesafe-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-Express_API-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
-[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-38B2AC?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![ECDSA](https://img.shields.io/badge/Crypto-ECDSA_P--256-8A2BE2?style=for-the-badge)](#-the-5-step-security-pipeline)
+[![Crypto](https://img.shields.io/badge/Crypto-ECDSA_P--256-8A2BE2?style=for-the-badge)](#-the-7-stage-verification-pipeline)
+[![Vitest](https://img.shields.io/badge/Vitest-29%2F29_Passing-252529?style=for-the-badge&logo=vitest&logoColor=yellow)](https://vitest.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](./LICENSE)
 
-[Live Demo](https://trustride-frontend.onrender.com) · [Backend API](https://trustride-backend.onrender.com) · [Technical Docs](./docs/ARCHITECTURE.md) · [Report a Bug](../../issues)
-
-> ⚡ **Note on Free-Tier Hosting**: Deployed on Render free tier. If idle, first load may take ~30–45s to wake up the cloud instance. The app UI includes auto-wakeup status handling.
+[Live Demo Console](http://localhost:5173) · [Backend REST API](http://localhost:4000) · [Immobilization Evidence](./docs/EVIDENCE_IMMOBILIZATION.md) · [Restoration Evidence](./docs/EVIDENCE_RESTORATION.md) · [5-Min Pitch Script](./docs/DEMO_PITCH_SCRIPT.md)
 
 </div>
 
@@ -26,338 +25,281 @@
 - [The Problem](#-the-problem)
 - [The Gap Nobody Fixed](#-the-gap-nobody-fixed)
 - [The TrustRide Solution](#-the-trustride-solution)
+- [Complete Master Demo Workflow](#-complete-master-demo-workflow)
 - [Platform Architecture](#-platform-architecture)
-- [The 5-Step Security Pipeline](#-the-5-step-security-pipeline)
-- [Threat Sandbox & Attack Simulations](#-threat-sandbox--attack-simulations)
-- [Screenshots](#-screenshots)
-- [Getting Started](#-getting-started)
-- [Deployment](#-deployment)
-- [Real-World Impact & Compliance](#-real-world-impact--compliance)
-- [Roadmap](#-roadmap)
+- [The 7-Stage Verification Pipeline](#-the-7-stage-verification-pipeline)
+- [Approval Center & Multi-Signature Governance](#-approval-center--multi-signature-governance)
+- [Command Center & Vehicle State Awareness](#-command-center--vehicle-state-awareness)
+- [Digital Twin & Telemetry Simulation](#-digital-twin--telemetry-simulation)
+- [Simulated Hardware Security Architecture](#-simulated-hardware-security-architecture)
+- [Threat Sandbox vs Scenario Simulator](#-threat-sandbox-vs-scenario-simulator)
+- [Immutable SHA-256 Audit Ledger](#-immutable-sha-256-audit-ledger)
+- [Analytics & Regulatory Compliance Mapping](#-analytics--regulatory-compliance-mapping)
+- [UI & Workflow Gallery](#-ui--workflow-gallery)
+- [Technology Stack](#-technology-stack)
+- [Prototype Scope vs Production Hardware Roadmap](#-prototype-scope-vs-production-hardware-roadmap)
 - [License](#-license)
 
 ---
 
 ## 🚨 The Problem
 
-In July 2026, an app called **BAT-BMS** went viral across India for one reason: **anyone within Bluetooth range could remotely cut power to a moving e-rickshaw.** Cheap battery management systems accept unauthenticated BLE connections — no PIN, no pairing, no signature. The Indian government pulled the app, along with two others, from app stores within days.
+In commercial Electric Vehicle (EV) fleets across e-rickshaws, 3-wheelers, and commercial logistics, remote commands (such as immobilizations, door locks, and OTA updates) are routinely issued by NBFC financiers, fleet managers, and operators.
 
-But BAT-BMS and its equivalents weren't built as attack tools. They were legitimate utilities — used by **NBFC financiers and fleet operators** to remotely disable a vehicle over an unpaid loan or a theft report. The ban fixed the exploit that made headlines. It didn't fix what made the exploit possible in the first place:
+However, 99% of current fleet management platforms execute remote commands **directly over unauthenticated REST APIs or unprotected cellular/BLE channels** without multi-approver quorum verification, hardware security module validation, or motion safety checks.
 
-- **Centralized, unauthenticated trust** — if the server (or the BLE channel) is compromised, an attacker gains the same power a legitimate financier has, with none of the accountability.
-- **No motion safety interlock** — nothing on the vehicle checks whether it's moving before cutting power. A shutdown at 40 km/h is a safety incident, not just a security one.
-- **No audit trail** — when a vehicle is disabled, there is no cryptographic record of who ordered it, when, or why — which means disputes between drivers and financiers have no evidence trail on either side.
+This creates three critical vulnerabilities:
+
+1. **Centralized, Unauthenticated Power** — If an operator credential or server API key is compromised, an attacker gains unilateral ability to disable vehicles blindly.
+2. **Missing Motion Safety Interlocks** — Commands execute instantly without checking whether the vehicle is traveling at 40 km/h on a highway, creating catastrophic physical safety hazards.
+3. **Absence of Non-Repudiable Evidence** — When a vehicle is remotely disabled, there is no cryptographic record of who authorized the command, why, or under what conditions, leading to unresolvable legal disputes.
 
 ---
 
 ## 🎯 The Gap Nobody Fixed
 
-Banning the app doesn't remove the underlying pattern — it just removes one implementation of it. The deeper problem was never really "Bluetooth is insecure." It's that **even a fully legitimate remote shutdown — issued by a real financier, for a real reason — has no authentication, no safety check, and no accountability.** That gap doesn't disappear when the news cycle does, and nothing in the current regulatory or product landscape closes it yet.
+Banning vulnerable apps does not eliminate the architectural pattern. The underlying issue is that **even a fully legitimate remote command — issued by an authorized financier for a valid loan default — lacks cryptographic authentication, motion safety interlocks, and non-repudiable accountability.**
 
-> Nobody today — driver, financier, or regulator — has a safe, accountable way to remotely disable a vehicle.
+> **Core Principle:** No single person or server should unilaterally disable a vehicle, and no command should execute on a moving vehicle without safety interlocks.
 
 ---
 
 ## 💡 The TrustRide Solution
 
-TrustRide replaces informal, unauthenticated remote shutdown with a **decentralized, zero-trust cryptographic command verification pipeline**:
+TrustRide replaces direct API command execution with a **Zero-Trust, Hardware-Cryptographic Remote Fleet Command Platform**:
 
-* **The backend server is untrusted by design.** It cannot generate or sign authorization commands — it acts strictly as a relay with no unilateral power, even if fully compromised.
-* **On-board asymmetric signature verification.** Every command is signed by a simulated Hardware Security Module key slot and verified natively on the vehicle's ECU against a pre-provisioned trust store.
-* **Firmware-governed safety interlocks.** Telemetry is checked on the vehicle itself. A command issued while the vehicle is moving is held in a deferred state — the motor relay is disabled only once velocity reaches exactly 0 km/h.
-* **Tamper-evident chronological auditing.** Every command, dispute, and reset is written as a SHA-256 hash-chained block — any post-hoc tampering is immediately, provably visible.
+* **Backend as Relay & Synchronization Layer:** The backend server cannot unilaterally create or sign commands. It strictly acts as a transport relay.
+* **Simulated Hardware Security Module (HSM) Signing:** Every command is cryptographically signed using ECDSA P-256 keys.
+* **Multi-Signature Governance Quorum:** Critical actions (like Emergency Immobilization) require **2-of-2 dual-approver co-signatures** (represented in the prototype by Security Admin Sarah Kim and Operations Manager Aisha Khan).
+* **7-Stage CI/CD Security Pipeline:** Commands run through sequential validation checks before hardware release.
+* **Firmware ASIL-D Motion Interlock:** Telemetry is verified in real-time. Commands issued to moving vehicles are held until speed safely reaches **0.0 km/h**.
+* **SHA-256 Immutable Audit Ledger:** Every command lifecycle event is committed to a hash-chained audit log with cryptographic tamper detection.
 
-<details>
-<summary><b>🔍 View Key Features Table</b></summary>
+---
 
-| Feature | Category | Description |
-|---|---|---|
-| 🔐 Secure Remote Immobilization | Security | Cryptographically authorized power isolation that overrides standard vehicle ignition |
-| ✍️ Asymmetric Verification | Cryptography | ECU-side signature checking using real ECDSA P-256 public keys stored in secure firmware |
-| 🔑 Dual-Key Multi-Signature | Governance | Enterprise governance requiring 2-of-2 distinct co-signatures (Financier + Operations Admin) before execution |
-| 🛡️ Replay Protection | Cryptography | Strict nonce and command UUID checks preventing reuse of intercepted authorization packets |
-| 🚦 Motion Safety Interlock | Safety | Telemetry-aware interlock that defers execution of override commands while speed > 0 |
-| 🔗 Immutable Audit Ledger | Integrity | SHA-256 hash-chained block ledger that makes any post-hoc database tampering immediately visible |
-| ⚖️ Driver Dispute Portal | Compliance | Lets drivers append dispute records with payment reference hashes directly to the audit log |
-| 🎬 Auto Demo Mode | Presentation | A guided player walking through threat simulations, interlock states, and ledger forensics |
-| 🕵️ Presenter's Judge Mode | Presentation | Live pop-up annotations detailing exactly which ECU check is running at each step |
-| ⚡ Interactive Attack Simulator | Threat Sandbox | Triggers replay, MITM, rogue-issuer, partial-signature, and stale-command attacks live, and shows the ECU reject each one |
-| 📊 Enterprise Analytics | Dashboard | Real-time fleet status, blocked threats, held-command queues, and ledger health |
-| 🗺️ Digital Twin Map | Telemetry | Interactive map tracking simulated vehicles, routes, and live speed telemetry |
-| 📟 Simulated HSM Module | Hardware | Software emulation of a secure element — ECDSA key slot storage, signing, and verification |
+## 🔄 Complete Master Demo Workflow
 
-</details>
+```
+Fleet Management Overview
+       ↓
+Select Target EV (e.g. Sargam Rickshaw TR-101)
+       ↓
+Command Center (Select Command + Legal Reason)
+       ↓
+Evaluate Risk, Hardware Target & Approval Policy
+       ↓
+Approval Center
+ ├── Routine Commands (Lock/Unlock) → 1/1 Direct Approval
+ └── Critical Commands (Immobilize) → 2-of-2 Multi-Signature Quorum (Sarah 1/2 + Aisha 2/2)
+       ↓
+7-Stage CI/CD Verification Pipeline
+ ├── 1. ECDSA P-256 Signature Verification
+ ├── 2. Epoch Timestamp TTL Freshness Check (<30s)
+ ├── 3. Single-Use Nonce Replay Protection
+ ├── 4. Governance Quorum Threshold Check (2/2)
+ ├── 5. ASIL-D Motion Safety Interlock (Hold until Speed = 0 km/h)
+ ├── 6. Vehicle Hardware HSM CAN Frame Dispatch
+ └── 7. SHA-256 Hash Chain Ledger Commitment
+       ↓
+Simulated Hardware & ECU Execution
+       ↓
+Digital Twin Real-Time Telemetry Update (Deceleration 28 → 0 km/h)
+       ↓
+Immutable SHA-256 Audit Ledger Commitment
+       ↓
+Analytics Dashboard & Regulatory Compliance Mapping
+```
 
 ---
 
 ## 🏗 Platform Architecture
 
-TrustRide separates key management, transport, verification, and forensic logging into distinct trust boundaries:
+TrustRide enforces strict separation of duties across client portals, cryptographic vaults, backend relays, and vehicle hardware simulators:
 
 ```mermaid
 graph TD
-    %% Nodes
-    F[Financier / NBFC Portal] -->|1. Sign command via HSM| HSM[Simulated HSM Key Store]
-    HSM -->|2. Encoded Signed Command| B[Backend Relay Server]
-    B -->|3. Relays command verbatim| ECU[Vehicle ECU Verifier]
+    Operator[Operator / Command Center] -->|1. Request Command| Policy{Approval Policy}
     
-    %% Telemetry Loop
-    GPS[Simulated GPS / Telemetry] -->|CAN Speed & Signal| ECU
+    Policy -->|Routine 1/1| Pipeline[7-Stage Verification Pipeline]
+    Policy -->|Critical 2/2| Quorum[Approval Center: 2-of-2 Co-Signature]
     
-    %% Output
-    ECU -->|4. Checks 1-4 Valid?| OK{Verification OK?}
-    OK -->|No: Log REJECTED| LEDG[Audit Ledger]
-    OK -->|Yes: Check 5 Speed| MOV{Is Speed > 0?}
-    MOV -->|Yes| HELD[Status: HELD in Buffer]
-    MOV -->|No| EXE[Status: EXECUTED - Cut Ignition]
+    Quorum -->|Sarah 1/2 + Aisha 2/2| Pipeline
     
-    HELD -->|Wait for Speed = 0| EXE
-    EXE -->|5. Log EXECUTED| LEDG
+    subgraph "7-Stage CI/CD Verification Engine"
+        Pipeline --> V1[Stage 1: ECDSA P-256 Signature]
+        V1 --> V2[Stage 2: Timestamp TTL < 30s]
+        V2 --> V3[Stage 3: Nonce Replay Check]
+        V3 --> V4[Stage 4: Multi-Sig Quorum]
+        V4 --> V5[Stage 5: ASIL-D Motion Safety Interlock]
+        V5 --> V6[Stage 6: Hardware HSM CAN Dispatch]
+        V6 --> V7[Stage 7: SHA-256 Ledger Commit]
+    end
     
-    %% Dispute Loop
-    D[Driver Mobile View] -->|6. Log Dispute & Payment Ref| LEDG
-```
-
-<details>
-<summary><b>📖 Read Architectural Component Details</b></summary>
-
-```
- Financier / NBFC Portal            Simulated HSM (Secure Element)
- ─────────────────────              ──────────────────────────────
- Holds no private keys.       ───▶  Cryptographic vault. Signs
- Sends payloads to the HSM           commands with ECDSA P-256.
- for signing.                       Private key never leaves.
-                                              │
-                                              ▼
-                              Backend Relay Server (Express)
-                              ───────────────────────────────
-                              Holds NO signing keys. Cannot
-                              alter payloads. Strictly relays.
-                                              │
-                                              ▼
-                              Vehicle ECU Verifier (firmware sim)
-                              ────────────────────────────────────
-                              Independently verifies every command.
-                              Runs the 5-step pipeline below.
-                                              │
-                                              ▼
-                              Audit Ledger (SHA-256 hash chain)
-                              ───────────────────────────────────
-                              Every event — Requested, Held,
-                              Rejected, Executed, Disputed —
-                              written as a tamper-evident block.
-```
-
-**The core rule the whole system is built around:** the vehicle never trusts the backend — only a signature it verifies itself. Even a fully compromised backend cannot forge a valid, authorized shutdown command.
-</details>
-
----
-
-## 🔒 The 5-Step Security Pipeline
-
-Before executing any remote override, the vehicle ECU runs every command through five sequential checkpoints, in strict order:
-
-```mermaid
-flowchart TD
-    Start[Command Received by ECU] --> Sig{1. Signature Valid?}
-    Sig -- No --> Reject[Log REJECTED & Terminate]
-    Sig -- Yes --> Exp{2. Timestamp Fresh?}
-    Exp -- No --> Reject
-    Exp -- Yes --> Replay{3. Nonce & ID Unique?}
-    Replay -- No --> Reject
-    Replay -- Yes --> Chain{4. Prior Hash Valid?}
-    Chain -- No --> Reject
-    Chain -- Yes --> Speed{5. Speed = 0 km/h?}
-    Speed -- No --> Hold[Log HELD in Buffer]
-    Speed -- Yes --> Execute[Log EXECUTED & Cut Power]
-    Hold --> |Telemetry detects stop| Execute
-```
-
-| # | Check | What it verifies |
-|---|---|---|
-| 1 | **Signature & Multi-Sig Policy** | Canonicalized payload verified against trusted ECDSA keys. Under Dual-Key Governance, requires 2-of-2 distinct signatures (`fin-001` + `ops-001`) |
-| 2 | **Freshness window** | Current time vs. command timestamp — anything older than 5 minutes is discarded as stale |
-| 3 | **Replay / nonce** | Unique command ID and nonce checked against everything the vehicle has already seen |
-| 4 | **Hash-chain anchoring** | Command must reference the hash of the last successfully executed command on that vehicle |
-| 5 | **Motion interlock** | Reads speed telemetry — non-zero speed holds the command; execution proceeds only at 0 km/h |
-
-<details>
-<summary><b>🔧 View Advanced Technical Check Details</b></summary>
-
-1. **Check 1: Asymmetric Signature Check**: The command fields (Issuer, Action, Nonce, Timestamp) are canonicalized, hashed, and verified against the issuer's public key in the ECU trust store.
-2. **Check 2: Freshness Window Check**: System compares the current time with the command timestamp. If it exceeds 5 minutes, it is flagged as expired and discarded.
-3. **Check 3: Nonce/Replay Check**: The unique command ID and nonce are verified against the local vehicle log. If seen previously, it is rejected.
-4. **Check 4: Hash-Chain Anchoring**: The command must specify the correct hash of the last successfully executed command on that vehicle. If it points to an invalid or stale block, the chain verification fails.
-5. **Check 5: Safety Interlock Check**: Reads CAN speed telemetry. If speed is non-zero, command execution is held, maintaining motor power. Execution proceeds only when velocity reaches 0.
-
-</details>
-
----
-
-## ⚔️ Threat Sandbox & Attack Simulations
-
-An interactive sandbox lets you trigger real exploit patterns and watch the ECU respond, live:
-
-| Attack Vector | Exploit | Blocked By | Result |
-|---|---|---|---|
-| BLE Local Sweep | Raw override payload sent with no signature | Check 1 | **REJECTED** — no trusted HSM certificate match |
-| Man-in-the-Middle | Valid payload intercepted and a field mutated | Check 1 | **REJECTED** — mutation breaks the canonical hash |
-| Verbatim Replay | A previously executed command resent as-is | Check 3 | **REJECTED** — nonce/command ID already consumed |
-| Stale Command Playback | A valid but hours-old signed command replayed | Check 2 | **REJECTED** — outside the 5-minute freshness window |
-| Rogue Issuer | Command signed with an unauthorized key pair | Check 1 | **REJECTED** — signing key not in the firmware trust store |
-| Partial Signature Attack | Only 1 of 2 required signatures attached (policy active) | Check 1 | **REJECTED** — fails 2-of-2 multi-sig requirement (`MULTISIG`) |
-| Backend Compromise | Attacker controls the API server, tries bulk shutdown | Check 1 | **REJECTED** — the backend never held signing keys |
-| Ledger Tampering | Direct database edit to erase or alter a logged event | Hash-chain | **FLAGGED** — chain breaks at the exact tampered index |
-
----
-
-## 📸 Screenshots
-
-#### Landing Page & Hero Section
-![TrustRide Landing Page](assets/TrustRidelandingpage.png)
-
-#### Control Center Overview
-![TrustRide Dashboard Overview](assets/TrustRidedashboardoverview.png)
-
-#### Digital Twin Telemetry Map
-![Vehicle Simulator Screenshot](assets/VehicleSimulatorScreenshot.png)
-
-#### Cryptographic Audit Ledger Forensics
-![Audit Ledger Screenshot](assets/AuditLedgerScreenshot.png)
-
----
-
-## 💻 Technology Stack & Setup
-
-<details>
-<summary><b>🛠 View Technology Stack Details</b></summary>
-
-* **Frontend** — Next.js 14 (React 18), TypeScript, TailwindCSS, Framer Motion, Lucide React
-* **Backend** — Node.js, Express (REST API), native `crypto` (ECDSA P-256 + SHA-256), `tsx` runtime
-* **Security** — custom 5-step ECU verifier engine, custom SHA-256 hash-chain audit log
-* **Hosting** — Render (long-lived containers — required, since in-memory state can't survive serverless recycling)
-
-</details>
-
-### Getting Started
-
-```bash
-git clone https://github.com/Kanneboinashivakumar/TrustRide.git
-cd TrustRide
-
-# backend
-cd backend && npm install
-
-# frontend
-cd ../frontend && npm install
-```
-
-### Run the full test suite (Vitest)
-
-TrustRide includes a comprehensive, 3-tier Vitest suite covering unit logic, protocol boundary edge cases, and API-level integration scenarios:
-
-```bash
-cd backend
-
-# Run the complete test suite (Unit, Edge-cases, & Integration)
-npm test
-
-# Run isolated sub-suites
-npm run test:unit          # Core crypto, hash chain, and engine verifier unit tests
-npm run test:edge          # Protocol boundary & security edge cases
-npm run test:integration   # 8 API-level scenario tests
-```
-
-#### Test Suite Architecture Overview:
-- 🧪 **Unit Tests (`test/unit/`)**:
-  - `crypto.test.ts`: ECDSA P-256 key pair generation, signature verification, single-field mutation detection, malformed PEM key handling, and strict canonical serialization order.
-  - `hashChain.test.ts`: Genesis entry zero-hash anchoring, chain linking integrity, single-byte post-hoc tamper detection, and corrective block restoration.
-  - `engine.test.ts`: ECU verifier 5-check isolation (`SIGNATURE`, `EXPIRY`, `REPLAY`, `CHAIN`, `MOTION INTERLOCK`).
-- ⚡ **Edge Case Tests (`test/edge-cases/`)**:
-  - Expiry timestamp at exact `5:00` boundary condition (`<= Date.now()`).
-  - `HELD` command whose 5-minute expiry window elapses while vehicle is in motion (dropped upon stop).
-  - Dual-key multi-sig policy with 1 of 2 signatures present (`MULTISIG` rejection).
-  - Cross-command nonce replay across different command actions/vehicle targets (`REPLAY` rejection).
-- 🔄 **Integration Scenarios (`test/integration/`)**:
-  - 8 API scenarios executed across 9 test blocks verifying full lifecycle flow from financier request to vehicle verification, driver disputes, tampered audit detection, and multi-sig co-authorization.
-- 🧹 **Code Quality & Linting**:
-  - ESLint v10 (`@typescript-eslint/recommended` flat config) is configured for `backend/` (`npm run lint`) and passes cleanly with **0 errors and 0 warnings**.
-
-### Run locally
-
-```bash
-# Terminal 1 — backend
-cd backend
-npm run dev            # http://localhost:4000
-
-# Terminal 2 — frontend
-cd frontend
-npm run dev            # http://localhost:3000
-```
-
-Open `http://localhost:3000`.
-
----
-
-## 🌐 Environment Variables & Deployment
-
-### Environment Variables
-
-For local development, default fallbacks are pre-configured. For production environments, configure these variables:
-
-**`frontend/.env.production`**
-```bash
-# Public base URL of your deployed Express backend
-NEXT_PUBLIC_API_BASE=https://trustride-backend.onrender.com/api
+    V5 -->|Speed > 0| Deferred[Status: HELD / Decelerating]
+    Deferred -->|Speed = 0| V6
+    
+    V7 --> Twin[Digital Twin Telemetry Update]
+    V7 --> Audit[SHA-256 Audit Ledger]
+    V7 --> Analytics[Analytics & Compliance Sync]
 ```
 
 ---
 
-## ☁️ Deployment
+## 🛡️ The 7-Stage Verification Pipeline
 
-Because vehicle and command state lives in-memory (no database dependency for the demo), the backend needs a **persistent, long-lived server process** — standard serverless functions recycle and wipe that state.
+The pipeline runs sequentially for every command. If any check fails, execution immediately halts or enters a safety hold:
 
-For complete cloud deployment configurations (including environment variable setups and Render instance maps), see the [Detailed Production Deployment Documentation](./docs/ARCHITECTURE.md#production-deployment-strategy).
-
-* **Backend on Render:** Deploy Web Service $\rightarrow$ root directory `backend` $\rightarrow$ build `npm install` $\rightarrow$ start `npm start`.
-* **Frontend on Render:** Deploy Web Service $\rightarrow$ root directory `frontend` $\rightarrow$ build `npm install && npm run build` $\rightarrow$ start `npm start` $\rightarrow$ set `NEXT_PUBLIC_API_BASE` to your backend URL.
-
-> Render's free tier spins the backend down after ~15 minutes idle — the first request after that takes ~30-50s to wake it. Warm it up before a live demo.
-
----
-
-## 📈 Real-World Impact & Compliance
-
-**Scale:** India's e-rickshaw market is valued at **$1.62B in 2026**, growing to **$3.14B by 2031** (14.12% CAGR). Roughly **700,000 new e-rickshaws** were registered in 2024 alone (VAHAN state data), with **316,000 more** targeted under the PM E-DRIVE subsidy scheme — the large majority financed through NBFCs rather than owned outright, meaning each one is already a viable remote-shutdown target with zero governance standard today.
-
-**Who benefits:**
-- **NBFCs** — enforceable lease compliance with a defensible audit trail, not informal apps carrying legal exposure
-- **EV OEMs** — security moves from bolt-on apps into standardized vehicle firmware
-- **Fleet operators** — vehicles can never be disabled mid-ride by a rogue call or a database breach
-- **Insurers** — standardized, provable ignition cut-offs support lower risk-based premiums
-
-**Designed in alignment with** (not certified against) established connected-vehicle frameworks: **AIS-156** (EV battery & power isolation safety), **ISO 26262** (functional safety), **UNECE R155** (cybersecurity management systems), and **ISO/SAE 21434** (automotive cybersecurity engineering lifecycle).
+| Stage # | Stage Name | Technical Verification Logic | Execution Target |
+| :--- | :--- | :--- | :--- |
+| **Stage 1** | **ECDSA Signature Verification** | Validates Secp256r1 curve signature using Simulated Hardware Security Module (HSM) key pair | `< 2.5 ms` |
+| **Stage 2** | **Timestamp Validation** | Checks epoch timestamp freshness against a strict `<30s` expiration window | `< 1.5 ms` |
+| **Stage 3** | **Replay Protection** | Verifies 64-bit single-use nonce to prevent payload re-transmission | `< 1.0 ms` |
+| **Stage 4** | **Multi-Signature Quorum** | Confirms 2-of-2 governance authorization policy has been met | `< 3.5 ms` |
+| **Stage 5** | **Motion Safety Interlock** | Enforces ASIL-D speed threshold check (defers execution if speed > 0 km/h) | `< 4.5 ms` |
+| **Stage 6** | **Vehicle HSM Dispatch** | Formats encrypted CAN bus frame (ID `0x7E0`) via vehicle gateway | `< 28.0 ms` |
+| **Stage 7** | **SHA-256 Audit Recording** | Binds transaction block to the Merkle hash-chain audit ledger | `< 3.5 ms` |
 
 ---
 
-## 🗺 Roadmap
+## 🔑 Approval Center & Multi-Signature Governance
 
-- [ ] **Physical HSM integration** — verification testing on real ATECC608-class secure element boards
-- [ ] **CAN bus integration** — command decoding over simulated CAN network frames
-- [x] **Multi-signature policies** — 2-of-2 dual-key governance (Financier + Ops Admin) with atomic co-signing (Completed)
-- [ ] **Offline verification** — fallback verification via time-based one-time tokens
-- [ ] **Beyond e-rickshaws** — the same governance layer extends to e-two-wheelers, e-autos, and fleet/last-mile delivery EVs using the same BMS/VCU pattern
+TrustRide categorizes commands by risk level to balance operational speed with safety:
+
+- **Routine Commands (Single Approval 1/1):** Door Lock/Unlock, Telematics Reset, OTA Firmware Update — can be executed directly by a single authorized operator.
+- **Critical Commands (2-of-2 Multi-Signature Quorum):** Emergency Immobilization, Battery Isolation, Remote Lockdown — require co-signatures from two distinct enterprise roles.
+
+> **Simulated Enterprise Quorum:** In the prototype demo, Sarah Kim (Security Admin) initiates the request (1/2), and Aisha Khan (Operations Manager) provides the second PIN co-signature (2/2) to authorize dispatch.
+
+---
+
+## 🎛️ Command Center & Vehicle State Awareness
+
+The Command Center evaluates vehicle telemetry in real-time before generating payloads:
+
+- **Context-Aware Parameters:** Automatically populates legal reason (e.g. Loan Default Recovery), affected hardware controllers (BMS / Motor Inverter), approval policy, and driver notification text.
+- **Dynamic Risk Rating:** Assesses speed, battery level, location, and motion safety requirements prior to submission.
+
+---
+
+## 🛺 Digital Twin & Telemetry Simulation
+
+During command execution, the Digital Twin provides real-time visual telemetry feedback:
+
+- **Gradual Deceleration Simulation (Immobilization):** When an immobilization command passes quorum on a moving vehicle, the Digital Twin displays the safety hold while speed gradually steps down: `28 → 20 → 12 → 5 → 0 km/h`. Once speed reaches 0 km/h, the motor isolation interlock completes.
+- **Re-engagement Acceleration Simulation (Restoration):** When a restoration command is authorized, the Digital Twin steps speed back up: `0 → 12 → 22 → 28 km/h`.
+- **Hardware Telemetry Simulation:** Displays real-time updates for door lock status, digital key revocation, motor temperature, controller voltage, and firmware version.
+
+---
+
+## 📟 Simulated Hardware Security Architecture
+
+> **Prototype Boundary & Hardware Simulation:**  
+> The current TrustRide prototype simulates vehicle-side security hardware and ECU environments in software. This simulated environment models components including the Simulated Hardware Security Module (HSM), Secure Element key slots, ECU verifier, motor controller, BMS, and telematics gateway. Cryptographic signing and verification utilize **ECDSA P-256**, while **SHA-256** governs audit chain integrity. Physical hardware integration (hardware secure elements and CAN-bus interfaces) represents future production integration work.
+
+---
+
+## 🧪 Threat Sandbox vs Scenario Simulator
+
+TrustRide provides two distinct simulation environments for security demonstration and operational testing:
+
+### 1. Threat Sandbox (Attacker & Malicious Payload Simulations)
+Demonstrates how the 7-Stage Pipeline rejects invalid, tampered, or malicious commands:
+- **Unauthorized Key** (Blocked at Stage 1)
+- **Modified Command Payload** (Blocked at Stage 1)
+- **Stale Expiration Timestamp** (Blocked at Stage 2)
+- **Nonce Replay Attack** (Blocked at Stage 3)
+- **Partial Signature / Missing Quorum** (Blocked at Stage 4)
+- **High-Speed Execution Attempt** (Blocked at Stage 5)
+- **Ledger Hash Tampering** (Flagged in Audit Ledger)
+
+### 2. Scenario Simulator (Legitimate Operational Workflows)
+Demonstrates real-world fleet situations:
+- **Vehicle Theft Recovery**
+- **Emergency Fleet Lockdown**
+- **Scheduled Maintenance Dispatch**
+
+---
+
+## 📜 Immutable SHA-256 Audit Ledger
+
+Every authorized command, hold, dispute, and restoration generates a structured record containing:
+`timestamp → vehicleId → command → legalReason → operator → approvers → risk → previousHash → currentHash`
+
+### Visual Hash Chain Lifecycle
+```
+[Generating Hash] ──▶ [Linking Previous Block] ──▶ [Ledger Updated] ──▶ [Ledger Locked]
+```
+
+### Forensic Tamper Detection
+If an attacker attempts to alter a historical database entry, the SHA-256 hash relationship breaks instantly:
+- Highlights the exact tampered block in red.
+- Displays `CHAIN INTEGRITY BROKEN`.
+- Re-verifying the chain pinpoints the tampered field.
+
+---
+
+## 📊 Analytics & Regulatory Compliance Mapping
+
+Post-execution events automatically synchronize with the Analytics and Compliance views.
+
+### Regulatory Mappings (Aligned With)
+- **AIS-156 / UN ECE R100:** EV Battery Safety & Electrical Isolation Context
+- **ISO 26262:** Functional Safety & ASIL-D Speed Interlocks
+- **UNECE R155:** Vehicle Cybersecurity Management System (CSMS)
+- **ISO/SAE 21434:** Automotive Cybersecurity Engineering
+
+---
+
+## 🖼️ UI & Workflow Gallery
+
+| Module View | Description & Path |
+| :--- | :--- |
+| **01. Landing Page** | Enterprise architecture overview & comparison (`/`) |
+| **02. Executive Dashboard** | Real-time fleet metrics, active threats & telemetry (`/app/dashboard`) |
+| **03. Fleet Management** | EV asset grid, health status & driver assignments (`/app/fleet`) |
+| **04. Command Center** | Vehicle-state aware command generator (`/app/command-center`) |
+| **05. Approval Center** | 1/1 Routine & 2/2 Multi-Sig PIN Co-signature drawer (`/app/approval-center`) |
+| **06. Verification Pipeline**| 7-Stage CI/CD cryptographic validation engine (`/app/verification`) |
+| **07. Digital Twin** | Real-time 2D route telemetry & deceleration simulation (`/app/digital-twin`) |
+| **08. Threat Sandbox** | Live attack simulation & rejection engine (`/app/threat-sandbox`) |
+| **09. Audit Ledger** | SHA-256 hash-chained block log & tamper detection (`/app/audit`) |
+| **10. Compliance Matrix** | Mapping to ISO 26262, UNECE R155, ISO/SAE 21434 (`/app/compliance`) |
+
+---
+
+## 💻 Technology Stack
+
+```
+Frontend:     Vite v6.4 + React 18 + TypeScript + TailwindCSS + Lucide Icons + Framer Motion
+Backend:      Node.js + Express REST API (ESM Modules)
+Cryptography: ECDSA P-256 (secp256r1 curve) + SHA-256 Merkle Hash Chain Engine
+Auth & IAM:   Google OAuth / GIS + Local JWT Session Management
+Testing:      Vitest (29/29 Unit & Integration Tests Passing) + TypeScript Strict Check
+Simulation:   2D Digital Twin Telemetry Engine + Simulated Hardware Security Module (HSM)
+```
+
+---
+
+## 🔬 Prototype Scope vs Production Hardware Roadmap
+
+### Current Software Prototype
+- Full 7-stage cryptographic pipeline execution in software.
+- 2-of-2 Multi-signature quorum approval workflow.
+- 2D Digital Twin telemetry and deceleration simulation.
+- SHA-256 hash chain audit ledger with tamper detection.
+- Threat Sandbox and Scenario Simulator.
+
+### Future Hardware Production Roadmap
+- **Physical Hardware Security Module (HSM):** Integration with hardware Secure Elements (e.g. NXP SE050 / STSAFE).
+- **Physical CAN / VCU Integration:** Direct CAN bus frame injection via Vehicle Control Unit (VCU).
+- **Physical BMS & Inverter Interlock:** Hardware-level relay isolation.
+- **Persistent Production Database:** PostgreSQL / CockroachDB hash-anchoring.
 
 ---
 
 ## 📄 License
 
-Licensed under the [MIT License](./LICENSE).
+Distributed under the MIT License. See [`LICENSE`](./LICENSE) for details.
 
 ---
-
-<div align="center">
-
-**Built by Kanneboina Shiva Kumar**
-
-</div>
+*© 2026 TrustRide Technologies. Built for secure, accountable EV mobility.*

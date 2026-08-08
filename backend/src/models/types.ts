@@ -54,12 +54,104 @@ export interface AuditLogEntry {
   entryHash: string;         // hash of this entry's fields + previousEntryHash
 }
 
+export interface VehicleDocument {
+  id: string;
+  type: string;
+  name: string;
+  issueDate?: string;
+  expiryDate: string;
+  status: 'valid' | 'expired' | 'pending';
+  url?: string;
+}
+
+export interface InsuranceDetails {
+  provider: string;
+  policyNumber: string;
+  coverage?: string;
+  coverageType?: string;
+  premium: string | number;
+  startDate?: string;
+  validFrom?: string;
+  validUntil?: string;
+  endDate?: string;
+  status: 'active' | 'expired' | 'pending';
+}
+
+export interface LoanDetails {
+  lender?: string;
+  financier?: string;
+  accountNumber: string;
+  principal?: number;
+  principalAmount?: number;
+  outstanding?: number;
+  remainingAmount?: number;
+  emi?: number;
+  monthlyEMI?: number;
+  tenure?: string;
+  startDate?: string;
+  nextPayment?: string;
+  nextDueDate?: string;
+  defaultRisk?: string;
+  status: 'current' | 'default' | 'paid' | 'good_standing';
+}
+
+export interface OwnerDetails {
+  id?: string;
+  name: string;
+  email: string;
+  phone?: string;
+  organization?: string;
+  address: string;
+  contactNumber?: string;
+  type?: string;
+}
+
+export interface VehicleTelemetry {
+  vehicleId?: string;
+  timestamp: string;
+  speed: number;
+  batteryLevel: number;
+  temperature: number;
+  location: { lat: number; lng: number };
+  heading?: number;
+  altitude?: number;
+  signalStrength?: number;
+  motorTemp?: number;
+  tirePressure?: number[];
+  energyConsumption?: number;
+}
+
 export interface Vehicle {
   vehicleId: string;
   driverName: string;
   isMoving: boolean;             // the "motion signal" toggle for the demo
   immobilized: boolean;          // runtime effect of an executed IMMOBILIZE
   pendingCommand: Command | null;
+
+  // Extended UI metadata fields (Indian Commercial EV Fleet)
+  id?: string;
+  vin?: string;
+  make?: string;
+  model?: string;
+  year?: number;
+  status?: 'active' | 'idle' | 'charging' | 'maintenance' | 'disabled' | 'offline';
+  licensePlate?: string;
+  color?: string;
+  batteryLevel?: number;
+  batteryHealth?: number;
+  range?: number;
+  speed?: number;
+  mileage?: number;
+  location?: { lat: number; lng: number; address: string };
+  lastUpdated?: string;
+  driver?: { id: string; name: string; avatar?: string };
+  threatCount?: number;
+  firmwareVersion?: string;
+  documents?: VehicleDocument[];
+  insurance?: InsuranceDetails;
+  loanDetails?: LoanDetails;
+  ownerDetails?: OwnerDetails;
+  telemetryHistory?: VehicleTelemetry[];
 }
 
 /** Lifecycle status of a command as tracked by the platform (for driver/financier views). */
