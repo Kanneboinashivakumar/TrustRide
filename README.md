@@ -2,9 +2,9 @@
 
 <img src="assets/TrustRideBranding.png" alt="TrustRide Logo" width="480">
 
-### Zero-Trust, Hardware-Cryptographic Remote EV Fleet Governance Platform
+### Zero-Trust, Simulated Hardware-Security Remote EV Fleet Governance Platform
 
-*Governed, multi-signature verified & motion-safe remote vehicle command execution — replacing unauthenticated direct API overrides with end-to-end cryptographic accountability.*
+*Governed, multi-signature verified & motion-safe remote vehicle command execution — replacing unauthenticated direct API overrides with end-to-end cryptographic accountability. Models HSM, ECU, BMS & Gateway behavior in software.*
 
 [![Vite](https://img.shields.io/badge/Vite-6.4-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
@@ -14,7 +14,7 @@
 [![Vitest](https://img.shields.io/badge/Vitest-29%2F29_Passing-252529?style=for-the-badge&logo=vitest&logoColor=yellow)](https://vitest.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](./LICENSE)
 
-[Live Demo Console](http://localhost:5173) · [Backend REST API](http://localhost:4000) · [Immobilization Evidence](./docs/EVIDENCE_IMMOBILIZATION.md) · [Restoration Evidence](./docs/EVIDENCE_RESTORATION.md) · [5-Min Pitch Script](./docs/DEMO_PITCH_SCRIPT.md)
+[Live Demo Console](http://localhost:5173) · [Backend REST API](http://localhost:4000)
 
 </div>
 
@@ -46,7 +46,7 @@
 
 In commercial Electric Vehicle (EV) fleets across e-rickshaws, 3-wheelers, and commercial logistics, remote commands (such as immobilizations, door locks, and OTA updates) are routinely issued by NBFC financiers, fleet managers, and operators.
 
-However, 99% of current fleet management platforms execute remote commands **directly over unauthenticated REST APIs or unprotected cellular/BLE channels** without multi-approver quorum verification, hardware security module validation, or motion safety checks.
+However, **many current fleet management platforms** execute remote commands **directly over unauthenticated REST APIs or unprotected cellular/BLE channels** without multi-approver quorum verification, hardware security module validation, or motion safety checks.
 
 This creates three critical vulnerabilities:
 
@@ -66,12 +66,12 @@ Banning vulnerable apps does not eliminate the architectural pattern. The underl
 
 ## 💡 The TrustRide Solution
 
-TrustRide replaces direct API command execution with a **Zero-Trust, Hardware-Cryptographic Remote Fleet Command Platform**:
+TrustRide replaces direct API command execution with a **Zero-Trust, Simulated Hardware-Security Remote Fleet Governance Platform**:
 
 * **Backend as Relay & Synchronization Layer:** The backend server cannot unilaterally create or sign commands. It strictly acts as a transport relay.
-* **Simulated Hardware Security Module (HSM) Signing:** Every command is cryptographically signed using ECDSA P-256 keys.
-* **Multi-Signature Governance Quorum:** Critical actions (like Emergency Immobilization) require **2-of-2 dual-approver co-signatures** (represented in the prototype by Security Admin Sarah Kim and Operations Manager Aisha Khan).
-* **7-Stage CI/CD Security Pipeline:** Commands run through sequential validation checks before hardware release.
+* **Simulated Hardware Security Module (HSM) Signing:** Every command is cryptographically signed using ECDSA P-256 keys. The prototype models the HSM, ECU, motor controller, BMS, and telematics gateway in software.
+* **Multi-Signature Governance Quorum:** Critical actions (like Emergency Immobilization) require **2-of-2 dual-approver co-signatures** (represented in the prototype by Security Admin Sarah Kim and Operations Manager Aisha Khan), while routine commands use single approval.
+* **7-Stage CI/CD Security Pipeline:** Commands run through sequential validation checks before simulated hardware dispatch.
 * **Firmware ASIL-D Motion Interlock:** Telemetry is verified in real-time. Commands issued to moving vehicles are held until speed safely reaches **0.0 km/h**.
 * **SHA-256 Immutable Audit Ledger:** Every command lifecycle event is committed to a hash-chained audit log with cryptographic tamper detection.
 
@@ -96,9 +96,9 @@ Approval Center
  ├── 1. ECDSA P-256 Signature Verification
  ├── 2. Epoch Timestamp TTL Freshness Check (<30s)
  ├── 3. Single-Use Nonce Replay Protection
- ├── 4. Governance Quorum Threshold Check (2/2)
+ ├── 4. Governance / Multi-Signature Verification (when required by policy)
  ├── 5. ASIL-D Motion Safety Interlock (Hold until Speed = 0 km/h)
- ├── 6. Vehicle Hardware HSM CAN Frame Dispatch
+ ├── 6. Simulated Vehicle Gateway CAN Frame Dispatch
  └── 7. SHA-256 Hash Chain Ledger Commitment
        ↓
 Simulated Hardware & ECU Execution
@@ -129,9 +129,9 @@ graph TD
         Pipeline --> V1[Stage 1: ECDSA P-256 Signature]
         V1 --> V2[Stage 2: Timestamp TTL < 30s]
         V2 --> V3[Stage 3: Nonce Replay Check]
-        V3 --> V4[Stage 4: Multi-Sig Quorum]
+        V3 --> V4[Stage 4: Multi-Sig Quorum Check (Policy-Based)]
         V4 --> V5[Stage 5: ASIL-D Motion Safety Interlock]
-        V5 --> V6[Stage 6: Hardware HSM CAN Dispatch]
+        V5 --> V6[Stage 6: Simulated Gateway CAN Dispatch]
         V6 --> V7[Stage 7: SHA-256 Ledger Commit]
     end
     
@@ -147,16 +147,16 @@ graph TD
 
 ## 🛡️ The 7-Stage Verification Pipeline
 
-The pipeline runs sequentially for every command. If any check fails, execution immediately halts or enters a safety hold:
+In the current prototype, these stages are executed and visualized in software to model the behavior of a vehicle-side security gateway. The pipeline runs sequentially for incoming commands:
 
 | Stage # | Stage Name | Technical Verification Logic | Execution Target |
 | :--- | :--- | :--- | :--- |
 | **Stage 1** | **ECDSA Signature Verification** | Validates Secp256r1 curve signature using Simulated Hardware Security Module (HSM) key pair | `< 2.5 ms` |
 | **Stage 2** | **Timestamp Validation** | Checks epoch timestamp freshness against a strict `<30s` expiration window | `< 1.5 ms` |
 | **Stage 3** | **Replay Protection** | Verifies 64-bit single-use nonce to prevent payload re-transmission | `< 1.0 ms` |
-| **Stage 4** | **Multi-Signature Quorum** | Confirms 2-of-2 governance authorization policy has been met | `< 3.5 ms` |
+| **Stage 4** | **Governance / Multi-Signature Verification** | Confirms 2-of-2 governance policy threshold is met (when required by command policy) | `< 3.5 ms` |
 | **Stage 5** | **Motion Safety Interlock** | Enforces ASIL-D speed threshold check (defers execution if speed > 0 km/h) | `< 4.5 ms` |
-| **Stage 6** | **Vehicle HSM Dispatch** | Formats encrypted CAN bus frame (ID `0x7E0`) via vehicle gateway | `< 28.0 ms` |
+| **Stage 6** | **Simulated Vehicle Gateway CAN Dispatch** | Formats encrypted CAN bus frame (ID `0x7E0`) via simulated vehicle gateway | `< 28.0 ms` |
 | **Stage 7** | **SHA-256 Audit Recording** | Binds transaction block to the Merkle hash-chain audit ledger | `< 3.5 ms` |
 
 ---
@@ -203,7 +203,7 @@ During command execution, the Digital Twin provides real-time visual telemetry f
 TrustRide provides two distinct simulation environments for security demonstration and operational testing:
 
 ### 1. Threat Sandbox (Attacker & Malicious Payload Simulations)
-Demonstrates how the 7-Stage Pipeline rejects invalid, tampered, or malicious commands:
+*“What happens when someone attacks or tampers with a command?”* — Demonstrates how the 7-Stage Pipeline rejects invalid, tampered, or malicious commands:
 - **Unauthorized Key** (Blocked at Stage 1)
 - **Modified Command Payload** (Blocked at Stage 1)
 - **Stale Expiration Timestamp** (Blocked at Stage 2)
@@ -213,7 +213,7 @@ Demonstrates how the 7-Stage Pipeline rejects invalid, tampered, or malicious co
 - **Ledger Hash Tampering** (Flagged in Audit Ledger)
 
 ### 2. Scenario Simulator (Legitimate Operational Workflows)
-Demonstrates real-world fleet situations:
+*“What happens during legitimate operational situations?”* — Demonstrates real-world fleet workflows and governance situations:
 - **Vehicle Theft Recovery**
 - **Emergency Fleet Lockdown**
 - **Scheduled Maintenance Dispatch**
@@ -273,7 +273,7 @@ Post-execution events automatically synchronize with the Analytics and Complianc
 Frontend:     Vite v6.4 + React 18 + TypeScript + TailwindCSS + Lucide Icons + Framer Motion
 Backend:      Node.js + Express REST API (ESM Modules)
 Cryptography: ECDSA P-256 (secp256r1 curve) + SHA-256 Merkle Hash Chain Engine
-Auth & IAM:   Google OAuth / GIS + Local JWT Session Management
+Auth & IAM:   Google OAuth / GIS + Local JWT (Configured via env variables; Client Secret is never committed)
 Testing:      Vitest (29/29 Unit & Integration Tests Passing) + TypeScript Strict Check
 Simulation:   2D Digital Twin Telemetry Engine + Simulated Hardware Security Module (HSM)
 ```
